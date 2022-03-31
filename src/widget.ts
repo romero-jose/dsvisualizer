@@ -11,18 +11,19 @@ import { MODULE_NAME, MODULE_VERSION } from './version';
 
 // Import the CSS
 import '../css/widget.css';
+import { operation_serializers, LinkedListOperation } from './serializers';
 
-export class ExampleModel extends DOMWidgetModel {
+export class LinkedListModel extends DOMWidgetModel {
   defaults() {
     return {
       ...super.defaults(),
-      _model_name: ExampleModel.model_name,
-      _model_module: ExampleModel.model_module,
-      _model_module_version: ExampleModel.model_module_version,
-      _view_name: ExampleModel.view_name,
-      _view_module: ExampleModel.view_module,
-      _view_module_version: ExampleModel.view_module_version,
-      value: 'Hello World',
+      _model_name: LinkedListModel.model_name,
+      _model_module: LinkedListModel.model_module,
+      _model_module_version: LinkedListModel.model_module_version,
+      _view_name: LinkedListModel.view_name,
+      _view_module: LinkedListModel.view_module,
+      _view_module_version: LinkedListModel.view_module_version,
+      email: 'john@example.com',
     };
   }
 
@@ -39,8 +40,16 @@ export class ExampleModel extends DOMWidgetModel {
   static view_module_version = MODULE_VERSION;
 }
 
-export class ExampleView extends DOMWidgetView {
+export class EmailView extends DOMWidgetView {
+  private _emailInput: HTMLInputElement;
+
   render() {
+    this._emailInput = document.createElement('input');
+    this._emailInput.type = 'email';
+    this._emailInput.value = 'john@example.com';
+    this._emailInput.disabled = true;
+    this.el.appendChild(this._emailInput);
+
     this.el.classList.add('custom-widget');
 
     this.value_changed();
@@ -49,5 +58,46 @@ export class ExampleView extends DOMWidgetView {
 
   value_changed() {
     this.el.textContent = this.model.get('value');
+  }
+}
+
+export class OperationModel extends DOMWidgetModel {
+  defaults() {
+    return {
+      ...super.defaults(),
+      _model_name: 'OperationModel',
+      _view_name: 'OperationView',
+      operation: <LinkedListOperation>{
+        operation: 'init',
+        value: 0,
+        id: 0,
+        next: null,
+      },
+    };
+  }
+
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    operation: operation_serializers,
+  };
+}
+
+export class OperationView extends DOMWidgetView {
+  private p: HTMLParagraphElement;
+
+  render(): void {
+    this.p = document.createElement('p');
+    this.el.appendChild(this.p);
+
+    this.value_changed();
+    this.model.on('change:operation', this.value_changed, this);
+  }
+
+  value_changed(): void {
+    this.p.innerText = JSON.stringify(this.operation, null, '\t');
+  }
+
+  get operation(): LinkedListOperation {
+    return this.model.get('operation');
   }
 }

@@ -6,9 +6,9 @@
 
 import pytest
 
-from ..example import ExampleWidget
+from ..widget import OperationWidget
 
 
-def test_example_creation_blank():
-    w = ExampleWidget()
-    assert w.value == 'Hello World'
+def test_operation_creation_blank():
+    w = OperationWidget()
+    assert w.operations == None
