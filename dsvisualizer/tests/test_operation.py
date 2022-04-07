@@ -6,9 +6,9 @@
 
 import pytest
 
-from ..widget import OperationWidget
+from ..widget import OperationsWidget
 
 
 def test_operation_creation_blank():
-    w = OperationWidget()
-    assert w.operations == None
+    w = OperationsWidget()
+    assert w.operations == []

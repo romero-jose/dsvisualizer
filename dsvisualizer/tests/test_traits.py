@@ -9,12 +9,14 @@ import pytest
 from ..traits import (
     GetValue,
     Init,
+    OperationTrait,
     SetValue,
     GetNext,
     SetNext,
     serialize_operation,
     deserialize_operation,
     LinkedListOperation,
+    operation_serialization,
 )
 
 
@@ -31,3 +33,7 @@ def test_serialization_and_deserialization():
     serialized = [serialize_operation(op) for op in ops]
     deserialized = [deserialize_operation(op) for op in serialized]
     assert ops == deserialized
+
+def test_operation_trait():
+    trait = OperationTrait().tag(sync=True, **operation_serialization)
+    trait.
