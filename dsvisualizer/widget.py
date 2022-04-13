@@ -23,6 +23,6 @@ class OperationsWidget(DOMWidget):
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
 
-    operations = OperationTrait(default_value=Init(1, 10, None)).tag(
+    operations = OperationTrait().tag(
         sync=True, **operation_serialization
     )

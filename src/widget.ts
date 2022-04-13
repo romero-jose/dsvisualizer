@@ -17,12 +17,7 @@ export class OperationsModel extends DOMWidgetModel {
       ...super.defaults(),
       _model_name: 'OperationsModel',
       _view_name: 'OperationsView',
-      operations: <LinkedListOperation>{
-        operation: 'init',
-        id: 0,
-        next: null,
-        value: 10,
-      },
+      operations: <LinkedListOperation[]>[],
     };
   }
 

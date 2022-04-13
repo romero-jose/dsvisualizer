@@ -83,11 +83,19 @@ def deserialize_operation(obj: dict[str, Any]) -> LinkedListOperation:
 
 
 class OperationTrait(TraitType):
-    klass = LinkedListOperation
-    default_value = None
+    klass = list
+    default_value = []
+
+
+def serialize_operations(ops):
+    return [serialize_operation(op) for op in ops]
+
+
+def deserialize_operations(obj):
+    return [deserialize_operations(o) for o in obj]
 
 
 operation_serialization = {
-    "from_json": lambda obj, _: deserialize_operation(obj),
-    "to_json": lambda op, _: serialize_operation(op),
+    "from_json": lambda obj, _: deserialize_operations(obj),
+    "to_json": lambda op, _: serialize_operations(op),
 }

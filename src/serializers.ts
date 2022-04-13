@@ -64,7 +64,19 @@ export function deserialize_operation(
   }
 }
 
+export function serialize_operations(
+  ops: LinkedListOperation[]
+): SerializedLinkedListOperation[] {
+  return ops.map(serialize_operation);
+}
+
+export function deserialize_operations(
+  ops: SerializedLinkedListOperation[]
+): LinkedListOperation[] {
+  return ops.map(deserialize_operation);
+}
+
 export const operation_serializers = {
-  serialize: serialize_operation,
-  deserialize: deserialize_operation,
+  serialize: serialize_operations,
+  deserialize: deserialize_operations,
 };
