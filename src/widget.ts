@@ -11,6 +11,8 @@ import {
 import '../css/widget.css';
 import { operation_serializers, LinkedListOperation } from './serializers';
 
+import { test } from './animation';
+
 export class OperationsModel extends DOMWidgetModel {
   defaults() {
     return {
@@ -37,6 +39,8 @@ export class OperationsView extends DOMWidgetView {
 
     this.value_changed();
     this.model.on('change:operations', this.value_changed);
+
+    test();
   }
 
   value_changed(): void {
