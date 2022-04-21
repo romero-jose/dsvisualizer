@@ -11,7 +11,7 @@ import {
 import '../css/widget.css';
 import { operation_serializers, LinkedListOperation } from './serializers';
 
-import { test } from './animation';
+import { display, test } from './animation';
 
 export class OperationsModel extends DOMWidgetModel {
   defaults() {
@@ -30,28 +30,34 @@ export class OperationsModel extends DOMWidgetModel {
 }
 
 export class OperationsView extends DOMWidgetView {
+  private container: HTMLDivElement;
   private p: HTMLParagraphElement;
 
   render(): void {
+    this.container = document.createElement('div');
+    this.container.className = 'operations-view';
+    this.el.appendChild(this.container);
+
     this.p = document.createElement('p');
-    this.el.appendChild(this.p);
-    this.p.className = 'operations-view';
+    this.container.appendChild(this.p);
 
     this.value_changed();
     this.model.on('change:operations', this.value_changed);
 
-    test();
+    test(this.container);
   }
 
   value_changed(): void {
-    this.p.innerText = JSON.stringify(this.operations, null, '\t');
+    console.log('value changed:');
+    console.log(this.operations);
+    display(this.p, this.operations);
   }
 
-  get operations(): LinkedListOperation {
+  get operations(): LinkedListOperation[] {
     return this.model.get('operations');
   }
 
-  set operations(list: LinkedListOperation) {
+  set operations(list: LinkedListOperation[]) {
     this.model.set('operations', list);
   }
 }

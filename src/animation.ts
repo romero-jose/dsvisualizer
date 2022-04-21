@@ -1,7 +1,8 @@
 import * as d3 from 'd3';
+import { LinkedListOperation } from './serializers';
 
 const WIDTH = 1000;
-const HEIGHT = 500;
+const HEIGHT = 250;
 
 const RECT_WIDTH = 100;
 const RECT_HEIGHT = 50;
@@ -74,9 +75,15 @@ class Viz {
   private _iterator: d3.Selection<SVGGElement, unknown, any, any>;
   private _data: Data[];
 
-  constructor(selection: string, data: Data[] = []) {
+  constructor(element: HTMLElement, data: Data[] = []) {
     // Container
-    this._container = d3.select(selection);
+    const svg = d3
+      .select(element)
+      .append('svg')
+      .attr('viewBox', [0, 0, WIDTH, HEIGHT])
+      .classed('viz', true);
+
+    this._container = svg;
 
     // Iterator
     this._iterator = this._container
@@ -173,7 +180,9 @@ class Viz {
   }
 
   async display() {
-    const boxes = this._container.selectAll('.box').data(this._data);
+    const boxes = this._container
+      .selectAll('.box')
+      .data(this._data, (d) => (d as Data).value);
 
     await Viz.exit(boxes);
     await Viz.update(boxes);
@@ -222,14 +231,9 @@ class Viz {
   }
 }
 
-export async function test(): Promise<void> {
+export async function test(element: HTMLElement): Promise<void> {
   // SVG
-  d3.select('.operations-view')
-    .append('svg')
-    .attr('viewBox', [0, 0, WIDTH, HEIGHT])
-    .classed('viz', true);
-
-  const linked_list_viz = new Viz('.viz');
+  const linked_list_viz = new Viz(element);
 
   await linked_list_viz.append({ value: '1' });
   await linked_list_viz.append({ value: '2' });
@@ -248,4 +252,34 @@ export async function test(): Promise<void> {
   await linked_list_viz.insert(0, { value: '0.1' });
   await linked_list_viz.insert(0, { value: '0.2' });
   await linked_list_viz.insert(0, { value: '0.3' });
+}
+
+function pretty_print(op: LinkedListOperation): string {
+  let msg: string;
+  switch (op.operation) {
+    case 'init':
+      msg = `${op.value}, ${op.next}`;
+      break;
+    case 'set_value':
+      msg = `${op.value}`;
+      break;
+    case 'get_value':
+      msg = '';
+      break;
+    case 'set_next':
+      msg = `${op.next}`;
+      break;
+    case 'get_next':
+      msg = '';
+      break;
+  }
+  return `${op.operation}(${msg})`;
+}
+
+export async function display(
+  element: HTMLElement,
+  ops: LinkedListOperation[]
+): Promise<void> {
+  const text = ops.map(pretty_print).join('\n');
+  element.innerText = text;
 }
