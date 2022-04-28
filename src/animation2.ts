@@ -74,7 +74,7 @@ interface VizNode {
 
 class Viz {
   private _container: d3.Selection<any, unknown, any, any>;
-  private _connected_graphs: Map<number, VizNode>;
+  private _nodes: Map<number, VizNode>;
   private _edges: Map<number, number>;
 
   constructor(element: HTMLElement) {
@@ -99,12 +99,12 @@ class Viz {
 
     this._container.call(zoomBehaviour);
 
-    this._connected_graphs = new Map<number, VizNode>();
+    this._nodes = new Map<number, VizNode>();
     this._edges = new Map<number, number>();
   }
 
   init(op: Init) {
-    this._connected_graphs.set(op.id, { value: op.value });
+    this._nodes.set(op.id, { value: op.value });
     if (op.next !== null) {
       this._edges.set(op.id, op.next);
     }
@@ -115,17 +115,17 @@ class Viz {
   }
 
   set_value(i: number, value: string) {
-    const current_value = this._connected_graphs.get(i);
+    const current_value = this._nodes.get(i);
     if (current_value !== undefined) {
       current_value.value = value;
-      this._connected_graphs.set(i, current_value);
+      this._nodes.set(i, current_value);
     }
   }
 
   async display() {
     const boxes = this._container
       .selectAll('.box')
-      .data(this._connected_graphs);
+      .data(this._nodes);
 
     const enter = (
       selection: d3.Selection<d3.BaseType, [number, VizNode], any, unknown>
