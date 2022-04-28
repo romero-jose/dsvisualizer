@@ -6,7 +6,7 @@ const HEIGHT = 250;
 
 const RECT_WIDTH = 100;
 const RECT_HEIGHT = 50;
-const RECT_Y_OFFSET = 100;
+// const RECT_Y_OFFSET = 100;
 
 // const ITER_HEIGHT = 30;
 // const ITER_PADDING = 5;
@@ -17,7 +17,7 @@ const STEP = 100;
 
 // const ITER_DURATION = 1000;
 const FADE_IN = 1000;
-// const TRANSITION = 1000;
+const TRANSITION = 1000;
 
 const ARROW_HEAD_LENGTH = 10;
 const ARROW_HEAD_WIDTH = 8;
@@ -25,6 +25,10 @@ const ARROW_STROKE_WIDTH = 2;
 
 function x_scale(i: number) {
   return OUTER_PADDING + (STEP + INNER_PADDING) * i;
+}
+
+function y_scale(i: number) {
+  return OUTER_PADDING + 70 * i;
 }
 
 export function fade_in(
@@ -156,7 +160,7 @@ class Viz {
     this.update_heads();
 
     const boxes_data: BoxData[] = this._heads
-      .map((k, i) => [...iterate(k, this._nodes, this._edges)])
+      .map((k) => [...iterate(k, this._nodes, this._edges)])
       .map((list, list_index) =>
         list.map((node, i) => {
           return {
@@ -167,20 +171,22 @@ class Viz {
           };
         })
       )
-      .reduce((prev, curr) => prev.concat(curr));
+      .reduce((prev, curr) => prev.concat(curr), []);
+    console.log(this._heads);
+    console.log(boxes_data);
     const boxes = this._container.selectAll('.box').data(boxes_data);
 
     const enter = (
       selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
     ) => {
       // Enter
-      const boxes_enter = boxes
+      const boxes_enter = selection
         .enter()
         .append('g')
         .classed('box', true)
         .attr(
           'transform',
-          (d) => `translate(${x_scale(d.i)}, ${RECT_Y_OFFSET})`
+          (d) => `translate(${x_scale(d.i)}, ${y_scale(d.list_index)})`
         );
 
       boxes_enter
@@ -205,8 +211,22 @@ class Viz {
       return transition.end();
     };
 
-    const promise = enter(boxes);
-    return await promise;
+    const update = (
+      selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
+    ) => {
+      console.log('update');
+      const boxes_update = selection
+        .transition()
+        .duration(TRANSITION)
+        .attr(
+          'transform',
+          (d) => `translate(${x_scale(d.i)}, ${y_scale(d.list_index)})`
+        );
+      return boxes_update.end();
+    };
+
+    await enter(boxes);
+    return await update(boxes);
   }
 }
 
@@ -225,8 +245,10 @@ export async function test(element: HTMLElement): Promise<void> {
     operation: 'init',
     id: 1,
     value: 'second',
-    next: 0,
+    next: null,
   });
+  await linked_list_viz.display();
+  linked_list_viz.set_next(0, 1);
   await linked_list_viz.display();
 }
 
