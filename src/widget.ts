@@ -12,7 +12,7 @@ import '../css/widget.css';
 import { operation_serializers, LinkedListOperation } from './serializers';
 
 import { display } from './animation';
-import { test } from './animation2';
+import { animate_operations } from './animation2';
 
 export class OperationsModel extends DOMWidgetModel {
   defaults() {
@@ -45,7 +45,7 @@ export class OperationsView extends DOMWidgetView {
     this.value_changed();
     this.model.on('change:operations', this.value_changed);
 
-    test(this.container);
+    animate_operations(this.container, this.operations);
   }
 
   value_changed(): void {

@@ -140,8 +140,12 @@ class Viz {
     }
   }
 
-  set_next(i: number, j: number) {
-    this._edges.set(i, j);
+  set_next(i: number, j: number | null) {
+    if (j !== null) {
+      this._edges.set(i, j);
+    } else {
+      this._edges.delete(i);
+    }
   }
 
   set_value(i: number, value: string) {
@@ -228,6 +232,35 @@ class Viz {
     await enter(boxes);
     return await update(boxes);
   }
+}
+
+function update_viz(viz: Viz, op: LinkedListOperation) {
+  switch (op.operation) {
+    case 'init':
+      viz.init(op);
+      break;
+    case 'set_value':
+      viz.set_value(op.id, op.value);
+      break;
+    case 'get_value':
+      break;
+    case 'set_next':
+      viz.set_next(op.id, op.next);
+      break;
+    case 'get_next':
+      break;
+  }
+}
+
+export async function animate_operations(
+  element: HTMLElement,
+  ops: LinkedListOperation[]
+): Promise<void> {
+  const linked_list_viz = new Viz(element);
+  return ops.forEach(async (op) => {
+    update_viz(linked_list_viz, op);
+    await linked_list_viz.display();
+  });
 }
 
 export async function test(element: HTMLElement): Promise<void> {
