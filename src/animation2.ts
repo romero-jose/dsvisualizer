@@ -72,10 +72,36 @@ interface VizNode {
   value: string;
 }
 
+interface BoxData {
+  i: number;
+  value: string;
+  list_index: number;
+  list_length: number;
+}
+
+// Assumes that there are no cycles pointing to the heads
+function heads(nodes: Map<number, unknown>, edges: Map<number, number>) {
+  const values = new Set(edges.values());
+  return [...nodes.keys()].filter((n) => !values.has(n));
+}
+
+function* iterate(
+  k: number,
+  nodes: Map<number, VizNode>,
+  edges: Map<number, number>
+) {
+  let next: number | undefined = k;
+  while (next !== undefined) {
+    yield nodes.get(next) as VizNode;
+    next = edges.get(next);
+  }
+}
+
 class Viz {
   private _container: d3.Selection<any, unknown, any, any>;
   private _nodes: Map<number, VizNode>;
   private _edges: Map<number, number>;
+  private _heads: number[];
 
   constructor(element: HTMLElement) {
     // Container
@@ -122,13 +148,30 @@ class Viz {
     }
   }
 
+  update_heads() {
+    this._heads = heads(this._nodes, this._edges);
+  }
+
   async display() {
-    const boxes = this._container
-      .selectAll('.box')
-      .data(this._nodes);
+    this.update_heads();
+
+    const boxes_data: BoxData[] = this._heads
+      .map((k, i) => [...iterate(k, this._nodes, this._edges)])
+      .map((list, list_index) =>
+        list.map((node, i) => {
+          return {
+            i: i,
+            value: node.value,
+            list_index: list_index,
+            list_length: list.length,
+          };
+        })
+      )
+      .reduce((prev, curr) => prev.concat(curr));
+    const boxes = this._container.selectAll('.box').data(boxes_data);
 
     const enter = (
-      selection: d3.Selection<d3.BaseType, [number, VizNode], any, unknown>
+      selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
     ) => {
       // Enter
       const boxes_enter = boxes
@@ -137,7 +180,7 @@ class Viz {
         .classed('box', true)
         .attr(
           'transform',
-          (d, i) => `translate(${x_scale(i)}, ${RECT_Y_OFFSET})`
+          (d) => `translate(${x_scale(d.i)}, ${RECT_Y_OFFSET})`
         );
 
       boxes_enter
@@ -147,7 +190,7 @@ class Viz {
 
       boxes_enter
         .append('text')
-        .text((d) => d[1].value)
+        .text((d) => d.value)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
         .attr('x', RECT_WIDTH / 2)

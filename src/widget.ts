@@ -11,7 +11,8 @@ import {
 import '../css/widget.css';
 import { operation_serializers, LinkedListOperation } from './serializers';
 
-import { display, test } from './animation';
+import { display } from './animation';
+import { test } from './animation2';
 
 export class OperationsModel extends DOMWidgetModel {
   defaults() {
