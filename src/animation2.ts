@@ -257,60 +257,9 @@ export async function animate_operations(
   ops: LinkedListOperation[]
 ): Promise<void> {
   const linked_list_viz = new Viz(element);
-  return ops.forEach(async (op) => {
+  for (const op of ops) {
     update_viz(linked_list_viz, op);
     await linked_list_viz.display();
-  });
-}
-
-export async function test(element: HTMLElement): Promise<void> {
-  // SVG
-  const linked_list_viz = new Viz(element);
-  await linked_list_viz.display();
-  linked_list_viz.init({
-    operation: 'init',
-    id: 0,
-    value: 'first',
-    next: null,
-  });
-  await linked_list_viz.display();
-  linked_list_viz.init({
-    operation: 'init',
-    id: 1,
-    value: 'second',
-    next: null,
-  });
-  await linked_list_viz.display();
-  linked_list_viz.set_next(0, 1);
-  await linked_list_viz.display();
-}
-
-function pretty_print(op: LinkedListOperation): string {
-  let msg: string;
-  switch (op.operation) {
-    case 'init':
-      msg = `${op.value}, ${op.next}`;
-      break;
-    case 'set_value':
-      msg = `${op.value}`;
-      break;
-    case 'get_value':
-      msg = '';
-      break;
-    case 'set_next':
-      msg = `${op.next}`;
-      break;
-    case 'get_next':
-      msg = '';
-      break;
   }
-  return `${op.operation}(${msg})`;
-}
-
-export async function display(
-  element: HTMLElement,
-  ops: LinkedListOperation[]
-): Promise<void> {
-  const text = ops.map(pretty_print).join('\n');
-  element.innerText = text;
+  return;
 }
