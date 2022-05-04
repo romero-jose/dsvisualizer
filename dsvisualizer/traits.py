@@ -1,39 +1,6 @@
-from dataclasses import dataclass
-import json
-from typing import Any, Union
 from traitlets import TraitType
-
-
-@dataclass(frozen=True)
-class Init:
-    id: int
-    value: Any
-    next: Union[int, None]
-
-
-@dataclass(frozen=True)
-class SetValue:
-    id: int
-    value: Any
-
-
-@dataclass(frozen=True)
-class GetValue:
-    id: int
-
-
-@dataclass(frozen=True)
-class SetNext:
-    id: int
-    next: Union[int, None]
-
-
-@dataclass(frozen=True)
-class GetNext:
-    id: int
-
-
-LinkedListOperation = Union[Init, SetValue, GetValue, SetNext, GetNext]
+from typing import Any
+from operations import Init, GetValue, SetValue, GetNext, SetNext, LinkedListOperation
 
 
 def serialize_operation(op: LinkedListOperation) -> dict[str, Any]:
