@@ -41,7 +41,9 @@ class LinkedListMixin:
         obj = super(LinkedListMixin, cls).__new__(cls)
         obj._id = next(counter)
         # TODO: Replace with a more robust method for obtaining the args
-        obj._logger.log(Init(obj._id, args[0], args[1]), get_code())
+        obj._logger.log(
+            Init(obj._id, args[0], args[1]._id if args[1] else None), get_code()
+        )
         return obj
 
     def __repr__(self):
@@ -50,12 +52,9 @@ class LinkedListMixin:
     def _get_class_name(self):
         return self.__class__.__name__
 
-    def _get_operations(self):
-        return self._logger.operations
-
     def visualize(self):
         w = OperationsWidget()
-        w.operations = self._get_operations()
+        w.operations = self._logger.operations
         return w
 
 
