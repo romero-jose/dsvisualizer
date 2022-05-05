@@ -9,10 +9,12 @@ counter = itertools.count()
 
 class Logger:
     def __init__(self):
-        self.list = []
+        self.operations = []
+        self.sources = []
 
-    def log(self, op: LinkedListOperation):
-        self.list.append(op)
+    def log(self, op: LinkedListOperation, src: str):
+        self.operations.append(op)
+        self.sources.append(src)
 
 
 default_logger = Logger()
@@ -39,8 +41,7 @@ class LinkedListMixin:
         obj = super(LinkedListMixin, cls).__new__(cls)
         obj._id = next(counter)
         # TODO: Replace with a more robust method for obtaining the args
-        obj._logger.log(Init(obj._id, args[0], args[1]))
-        print(f"==> Code: {get_code()}")
+        obj._logger.log(Init(obj._id, args[0], args[1]), get_code())
         return obj
 
     def __repr__(self):
@@ -50,7 +51,7 @@ class LinkedListMixin:
         return self.__class__.__name__
 
     def _get_operations(self):
-        return self._logger.list
+        return self._logger.operations
 
     def visualize(self):
         w = OperationsWidget()
@@ -63,14 +64,12 @@ class ValueField:
         self.name = name
 
     def __get__(self, obj: LinkedListMixin, objtype=None):
-        obj._logger.log(GetValue(obj._id))
-        print(f"==> Code: {get_code()}")
+        obj._logger.log(GetValue(obj._id), get_code())
         return obj._value
 
     def __set__(self, obj: LinkedListMixin, value):
         if obj._value != UNINITIALIZED:
-            obj._logger.log(SetValue(obj._id), value)
-            print(f"==> Code: {get_code()}")
+            obj._logger.log(SetValue(obj._id, value), get_code())
         obj._value = value
 
 
@@ -79,12 +78,10 @@ class NextField:
         self.name = name
 
     def __get__(self, obj: LinkedListMixin, objtype=None):
-        obj._logger.log(GetNext(obj._id))
-        print(f"==> Code: {get_code()}")
+        obj._logger.log(GetNext(obj._id), get_code())
         return obj._next
 
     def __set__(self, obj, next):
         if obj._next != UNINITIALIZED:
-            obj._logger.log(SetNext(obj._id, next._id if next else None))
-            print(f"==> Code: {get_code()}")
+            obj._logger.log(SetNext(obj._id, next._id if next else None), get_code())
         obj._next = next
