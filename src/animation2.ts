@@ -78,6 +78,7 @@ interface VizNode {
 
 interface BoxData {
   i: number;
+  id: number;
   value: string;
   list_index: number;
   list_length: number;
@@ -96,7 +97,7 @@ function* iterate(
 ) {
   let next: number | undefined = k;
   while (next !== undefined) {
-    yield nodes.get(next) as VizNode;
+    yield { id: next, node: nodes.get(next) as VizNode };
     next = edges.get(next);
   }
 }
@@ -163,13 +164,17 @@ class Viz {
   async display() {
     this.update_heads();
 
+    // Define the data to map to the boxes. Uses the entry points or heads
+    // to create a list of lists. Then flattens the list of lists into a
+    // list with all the data for each node.
     const boxes_data: BoxData[] = this._heads
       .map((k) => [...iterate(k, this._nodes, this._edges)])
       .map((list, list_index) =>
-        list.map((node, i) => {
+        list.map((datum, i) => {
           return {
             i: i,
-            value: node.value,
+            id: datum.id,
+            value: datum.node.value,
             list_index: list_index,
             list_length: list.length,
           };
@@ -178,12 +183,15 @@ class Viz {
       .reduce((prev, curr) => prev.concat(curr), []);
     console.log(this._heads);
     console.log(boxes_data);
-    const boxes = this._container.selectAll('.box').data(boxes_data);
+
+    // Map the data to the boxes
+    const boxes = this._container
+      .selectAll('.box')
+      .data(boxes_data, (d) => (d as BoxData).id);
 
     const enter = (
       selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
     ) => {
-      // Enter
       const boxes_enter = selection
         .enter()
         .append('g')
