@@ -1,38 +1,61 @@
 from traitlets import TraitType
 from typing import Any
-from operations import Init, GetValue, SetValue, GetNext, SetNext, LinkedListOperation
+from dsvisualizer.operations import Init, GetValue, SetValue, GetNext, SetNext, LinkedListOperation
+from functools import reduce
+from operator import iconcat
 
 
-def serialize_operation(op: LinkedListOperation) -> dict[str, Any]:
+def serialize_operation(op: LinkedListOperation) -> list[dict[str, Any]]:
     if isinstance(op, Init):
-        return {
-            "operation": "init",
-            "id": op.id,
-            "value": op.value,
-            "next": op.next,
-        }
+        if op.next is None or isinstance(op.next, int):
+            return [
+                {
+                    "operation": "init",
+                    "id": op.id,
+                    "value": op.value,
+                    "next": op.next,
+                }
+            ]
+        else:
+            # Separate into parts
+            first = serialize_operation(op.next)
+            second = {
+                "operation": "init",
+                "id": op.id,
+                "value": op.value,
+                "next": first[-1]["id"],
+            }
+            return first + [second]
     elif isinstance(op, SetValue):
-        return {
-            "operation": "set_value",
-            "id": op.id,
-            "value": op.value,
-        }
+        return [
+            {
+                "operation": "set_value",
+                "id": op.id,
+                "value": op.value,
+            }
+        ]
     elif isinstance(op, GetValue):
-        return {
-            "operation": "get_value",
-            "id": op.id,
-        }
+        return [
+            {
+                "operation": "get_value",
+                "id": op.id,
+            }
+        ]
     elif isinstance(op, SetNext):
-        return {
-            "operation": "set_next",
-            "id": op.id,
-            "next": op.next,
-        }
+        return [
+            {
+                "operation": "set_next",
+                "id": op.id,
+                "next": op.next,
+            }
+        ]
     elif isinstance(op, GetNext):
-        return {
-            "operation": "get_next",
-            "id": op.id,
-        }
+        return [
+            {
+                "operation": "get_next",
+                "id": op.id,
+            }
+        ]
 
 
 def deserialize_operation(obj: dict[str, Any]) -> LinkedListOperation:
@@ -55,7 +78,8 @@ class OperationTrait(TraitType):
 
 
 def serialize_operations(ops):
-    return [serialize_operation(op) for op in ops]
+    op_lists = (serialize_operation(op) for op in ops)
+    return reduce(iconcat, op_lists, [])
 
 
 def deserialize_operations(obj):

@@ -4,8 +4,10 @@
 # Copyright (c) Jose Romero.
 # Distributed under the terms of the Modified BSD License.
 
-from .widget import OperationsWidget
-from .traits import Init, SetValue, GetValue, SetNext, GetNext, LinkedListOperation
+from .widget import *
+from .traits import *
+from .operations import *
+
 from ._version import __version__, version_info
 
 

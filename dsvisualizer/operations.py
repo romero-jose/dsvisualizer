@@ -6,7 +6,7 @@ from typing import Any, Union
 class Init:
     id: int
     value: Any
-    next: Union[int, None]
+    next: Union[int, 'Init', None]
 
 
 @dataclass(frozen=True)
