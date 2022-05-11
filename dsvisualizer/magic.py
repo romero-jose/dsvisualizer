@@ -6,6 +6,18 @@ from .widget import OperationsWidget
 
 counter = itertools.count()
 
+_logger = None
+
+
+def get_logger():
+    global _logger
+    return _logger
+
+
+def set_logger(logger: "Logger"):
+    global _logger
+    _logger = logger
+
 
 class Logger:
     def __init__(self):
@@ -21,41 +33,20 @@ class Logger:
         w.operations = self.operations
         return w
 
+    def __enter__(self):
+        self._saved_logger = get_logger()
+        set_logger(self)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        set_logger(self._saved_logger)
+
 
 _logger = Logger()
 
 
-def get_logger():
-    global _logger
-    return _logger
-
-
-def set_logger(logger: Logger):
-    global _logger
-    _logger = logger
-
-
 def reset_logger():
     set_logger(Logger())
-
-
-class LoggerContextManager:
-    def __init__(self, logger: Logger=None):
-        if logger is None:
-            logger = Logger()
-        self.logger = logger
-
-    def __enter__(self):
-        self.saved_logger = get_logger()
-        set_logger(self.logger)
-        return self.logger
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        set_logger(self.saved_logger)
-
-
-def log(logger: Logger=None):
-    return LoggerContextManager(logger)
 
 
 class Uninitialized:
