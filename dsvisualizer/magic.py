@@ -20,9 +20,13 @@ def set_logger(logger: "Logger"):
 
 
 class Logger:
-    def __init__(self):
-        self.operations = []
-        self.sources = []
+    def __init__(self, logger: "Logger"):
+        if logger:
+            self.operations = logger.operations
+            self.sources = logger.sources
+        else:
+            self.operations = []
+            self.sources = []
 
     def log(self, op: LinkedListOperation, src: str):
         self.operations.append(op)
@@ -33,6 +37,9 @@ class Logger:
         w.operations = self.operations
         return w
 
+    def copy(self):
+        return Logger(self)
+
     def __enter__(self):
         self._saved_logger = get_logger()
         set_logger(self)
@@ -42,11 +49,11 @@ class Logger:
         set_logger(self._saved_logger)
 
 
-_logger = Logger()
-
-
 def reset_logger():
     set_logger(Logger())
+
+
+_logger = Logger()
 
 
 class Uninitialized:
