@@ -9,7 +9,7 @@ import {
 
 // Import the CSS
 import '../css/widget.css';
-import { operation_serializers, LinkedListOperation } from './serializers';
+import { operation_serializers, Operations } from './serializers';
 
 import { display } from './animation';
 import { animate_operations } from './animation2';
@@ -20,7 +20,7 @@ export class OperationsModel extends DOMWidgetModel {
       ...super.defaults(),
       _model_name: 'OperationsModel',
       _view_name: 'OperationsView',
-      operations: <LinkedListOperation[]>[],
+      operations: <Operations>{ operations: [] },
     };
   }
 
@@ -54,11 +54,11 @@ export class OperationsView extends DOMWidgetView {
     display(this.p, this.operations);
   }
 
-  get operations(): LinkedListOperation[] {
+  get operations(): Operations {
     return this.model.get('operations');
   }
 
-  set operations(list: LinkedListOperation[]) {
-    this.model.set('operations', list);
+  set operations(operations: Operations) {
+    this.model.set('operations', operations);
   }
 }

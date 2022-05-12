@@ -20,17 +20,14 @@ def set_logger(logger: "Logger"):
 
 
 class Logger:
-    def __init__(self, logger: "Logger"):
+    def __init__(self, logger: "Logger" = None):
         if logger:
             self.operations = logger.operations
-            self.sources = logger.sources
         else:
-            self.operations = []
-            self.sources = []
+            self.operations = Operations()
 
-    def log(self, op: LinkedListOperation, src: str):
-        self.operations.append(op)
-        self.sources.append(src)
+    def log(self, op: LinkedListOperation, source: str):
+        self.operations.operations.append(Operation(op, Metadata(True, source)))
 
     def visualize(self):
         w = OperationsWidget()

@@ -6,34 +6,33 @@
 
 import pytest
 
-from ..traits import (
+from dsvisualizer.operations import Operation, Operations
+
+from dsvisualizer.traits import (
     GetValue,
     Init,
-    OperationTrait,
     SetValue,
     GetNext,
     SetNext,
-    serialize_operation,
-    deserialize_operation,
-    LinkedListOperation,
-    operation_serialization,
+    deserialize_operations,
+    serialize_operations,
+    Metadata,
 )
 
 
 def test_serialization_and_deserialization():
-    ops = [
-        Init(0, 10, None),
-        Init(1, 11, 0),
-        Init(2, 12, 1),
-        GetValue(2),
-        SetValue(2, 13),
-        GetNext(2),
-        SetNext(2, 1),
-    ]
-    serialized = [serialize_operation(op) for op in ops]
-    deserialized = [deserialize_operation(op) for op in serialized]
-    assert ops == deserialized
-
-def test_operation_trait():
-    trait = OperationTrait().tag(sync=True, **operation_serialization)
-    trait.
+    operations = Operations(
+        operations=[
+            Operation(Init(0, 10, None), Metadata(animate=False, source="n1 = Node(10)")),
+            Operation(Init(1, 11, 0), Metadata(animate=False, source="n2 = Node(11, n1)")),
+            Operation(Init(2, 12, 1), Metadata(animate=False, source="n3 = Node(12, n2)")),
+            Operation(GetValue(2), Metadata(animate=True, source="v = n3.value")),
+            Operation(SetValue(2, 13), Metadata(animate=True, source="n3.value = 13")),
+            Operation(GetNext(2), Metadata(animate=True, source="next = n3.next")),
+            Operation(SetNext(2, 1), Metadata(animate=False, source="n3.next = n2")),
+        ]
+    )
+    serialized = serialize_operations(operations)
+    deserialized = deserialize_operations(serialized)
+    assert operations == deserialized
+    assert serialized == serialize_operations(deserialized)

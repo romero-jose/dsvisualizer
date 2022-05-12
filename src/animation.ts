@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { LinkedListOperation } from './serializers';
+import { Operation, Operations } from './serializers';
 
 const WIDTH = 1000;
 const HEIGHT = 250;
@@ -254,7 +254,8 @@ export async function test(element: HTMLElement): Promise<void> {
   await linked_list_viz.insert(0, { value: '0.3' });
 }
 
-function pretty_print(op: LinkedListOperation): string {
+function pretty_print(operation: Operation): string {
+  const op = operation.operation;
   let msg: string;
   switch (op.operation) {
     case 'init':
@@ -278,8 +279,8 @@ function pretty_print(op: LinkedListOperation): string {
 
 export async function display(
   element: HTMLElement,
-  ops: LinkedListOperation[]
+  ops: Operations
 ): Promise<void> {
-  const text = ops.map(pretty_print).join('\n');
+  const text = ops.operations.map(pretty_print).join('\n');
   element.innerText = text;
 }

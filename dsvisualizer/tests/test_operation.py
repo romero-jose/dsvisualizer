@@ -11,4 +11,4 @@ from ..widget import OperationsWidget
 
 def test_operation_creation_blank():
     w = OperationsWidget()
-    assert w.operations == []
+    assert w.operations.operations == []

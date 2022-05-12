@@ -34,46 +34,26 @@ export type LinkedListOperation =
   | SetNext
   | GetNext;
 
-export class SerializedLinkedListOperation {
-  operation: 'init' | 'get_value' | 'set_value' | 'get_next' | 'set_next';
-  id: number;
-  value?: any;
-  next?: number | null;
+export type Metadata = {
+  animate: boolean;
+  source: string;
+};
+
+export type Operation = {
+  operation: LinkedListOperation;
+  metadata: Metadata;
+};
+
+export type Operations = {
+  operations: Operation[];
+};
+
+function serialize_operations(ops: Operations): Operations {
+  return JSON.parse(JSON.stringify(ops));
 }
 
-export function serialize_operation(
-  op: LinkedListOperation
-): SerializedLinkedListOperation {
-  return <SerializedLinkedListOperation>op;
-}
-
-export function deserialize_operation(
-  op: SerializedLinkedListOperation
-): LinkedListOperation {
-  switch (op.operation) {
-    case 'init':
-      return <Init>op;
-    case 'set_value':
-      return <SetValue>op;
-    case 'get_value':
-      return <GetValue>op;
-    case 'set_next':
-      return <SetNext>op;
-    case 'get_next':
-      return <GetNext>op;
-  }
-}
-
-export function serialize_operations(
-  ops: LinkedListOperation[]
-): SerializedLinkedListOperation[] {
-  return ops.map(serialize_operation);
-}
-
-export function deserialize_operations(
-  ops: SerializedLinkedListOperation[]
-): LinkedListOperation[] {
-  return ops.map(deserialize_operation);
+function deserialize_operations(obj: unknown): Operations {
+  return <Operations>obj;
 }
 
 export const operation_serializers = {

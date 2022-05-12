@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { LinkedListOperation, Init } from './serializers';
+import { Operations, Operation, Init } from './serializers';
 
 const WIDTH = 1000;
 const HEIGHT = 250;
@@ -242,7 +242,8 @@ class Viz {
   }
 }
 
-function update_viz(viz: Viz, op: LinkedListOperation) {
+function update_viz(viz: Viz, operation: Operation) {
+  const op = operation.operation;
   switch (op.operation) {
     case 'init':
       viz.init(op);
@@ -262,10 +263,10 @@ function update_viz(viz: Viz, op: LinkedListOperation) {
 
 export async function animate_operations(
   element: HTMLElement,
-  ops: LinkedListOperation[]
+  ops: Operations
 ): Promise<void> {
   const linked_list_viz = new Viz(element);
-  for (const op of ops) {
+  for (const op of ops.operations) {
     update_viz(linked_list_viz, op);
     await linked_list_viz.display();
   }
