@@ -1,21 +1,21 @@
 import * as d3 from 'd3';
-import { Operation, Operations } from './serializers';
+import { Operations, Operation, Init } from './serializers';
 
 const WIDTH = 1000;
 const HEIGHT = 250;
 
 const RECT_WIDTH = 100;
 const RECT_HEIGHT = 50;
-const RECT_Y_OFFSET = 100;
+// const RECT_Y_OFFSET = 100;
 
-const ITER_HEIGHT = 30;
-const ITER_PADDING = 5;
+// const ITER_HEIGHT = 30;
+// const ITER_PADDING = 5;
 
 const OUTER_PADDING = 20;
 const INNER_PADDING = 50;
 const STEP = 100;
 
-const ITER_DURATION = 1000;
+// const ITER_DURATION = 1000;
 const FADE_IN = 1000;
 const TRANSITION = 1000;
 
@@ -27,20 +27,26 @@ function x_scale(i: number) {
   return OUTER_PADDING + (STEP + INNER_PADDING) * i;
 }
 
+function y_scale(i: number) {
+  return OUTER_PADDING + 70 * i;
+}
+
 export function fade_in(
   svg: d3.Selection<any, unknown, any, any>
 ): Promise<void> {
   return svg.transition().duration(FADE_IN).attr('opacity', 1).end();
 }
 
-function fade_out(svg: d3.Selection<any, unknown, any, any>) {
+export function fade_out(
+  svg: d3.Selection<any, unknown, any, any>
+): Promise<void> {
   return svg.transition().duration(FADE_IN).attr('opacity', 0).end();
 }
 
-function append_arrow(
+export function append_arrow(
   svg: d3.Selection<any, unknown, any, any>,
   length: number
-) {
+): d3.Selection<SVGGElement, unknown, any, any> {
   const arrow = svg.append('g').attr('class', 'arrow');
 
   // Stem
@@ -66,16 +72,43 @@ function append_arrow(
   return arrow;
 }
 
-interface Data {
+interface VizNode {
   value: string;
+}
+
+interface BoxData {
+  i: number;
+  id: number;
+  value: string;
+  list_index: number;
+  list_length: number;
+}
+
+// Assumes that there are no cycles pointing to the heads
+function heads(nodes: Map<number, unknown>, edges: Map<number, number>) {
+  const values = new Set(edges.values());
+  return [...nodes.keys()].filter((n) => !values.has(n));
+}
+
+function* iterate(
+  k: number,
+  nodes: Map<number, VizNode>,
+  edges: Map<number, number>
+) {
+  let next: number | undefined = k;
+  while (next !== undefined) {
+    yield { id: next, node: nodes.get(next) as VizNode };
+    next = edges.get(next);
+  }
 }
 
 class Viz {
   private _container: d3.Selection<any, unknown, any, any>;
-  private _iterator: d3.Selection<SVGGElement, unknown, any, any>;
-  private _data: Data[];
+  private _nodes: Map<number, VizNode>;
+  private _edges: Map<number, number>;
+  private _heads: number[];
 
-  constructor(element: HTMLElement, data: Data[] = []) {
+  constructor(element: HTMLElement) {
     // Container
     const svg = d3
       .select(element)
@@ -84,21 +117,6 @@ class Viz {
       .classed('viz', true);
 
     this._container = svg;
-
-    // Iterator
-    this._iterator = this._container
-      .append('g')
-      .attr('class', 'iterator')
-      .attr('transform', `translate(${x_scale(0)}, ${RECT_Y_OFFSET})`)
-      .attr('opacity', 0);
-
-    append_arrow(this._iterator, ITER_HEIGHT).attr(
-      'transform',
-      `rotate(90) translate(${-ITER_HEIGHT - ITER_PADDING}, ${-RECT_WIDTH / 2})`
-    );
-
-    // Data
-    this._data = data;
 
     // Zoom
     const zoomBehaviour = d3
@@ -111,147 +129,148 @@ class Viz {
       .on('zoom', (event) => event.transform);
 
     this._container.call(zoomBehaviour);
+
+    this._nodes = new Map<number, VizNode>();
+    this._edges = new Map<number, number>();
   }
 
-  static enter(selection: d3.Selection<d3.BaseType, Data, any, unknown>) {
-    console.log('enter');
-    const boxes = selection;
-
-    const boxes_enter = boxes
-      .enter()
-      .append('g')
-      .classed('box', true)
-      .attr(
-        'transform',
-        (d, i) => `translate(${x_scale(i)}, ${RECT_Y_OFFSET})`
-      );
-
-    boxes_enter
-      .append('rect')
-      .attr('width', RECT_WIDTH)
-      .attr('height', RECT_HEIGHT);
-
-    append_arrow(
-      boxes_enter as d3.Selection<any, unknown, any, any>,
-      INNER_PADDING
-    ).attr('transform', `translate(${RECT_WIDTH}, ${RECT_HEIGHT / 2})`);
-
-    boxes_enter
-      .append('text')
-      .text((d) => d.value)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('x', RECT_WIDTH / 2)
-      .attr('y', RECT_HEIGHT / 2);
-
-    const transition = boxes_enter
-      .attr('opacity', 0)
-      .transition()
-      .duration(FADE_IN)
-      .attr('opacity', 1);
-
-    return transition.end();
+  init(op: Init) {
+    this._nodes.set(op.id, { value: op.value });
+    if (op.next !== null) {
+      this._edges.set(op.id, op.next);
+    }
   }
 
-  static exit(selection: d3.Selection<d3.BaseType, Data, any, unknown>) {
-    console.log('exit');
-    const boxes = selection;
-    const boxes_exit = boxes.exit();
-    const transition = boxes_exit
-      .attr('opacity', 1)
-      .transition()
-      .duration(TRANSITION)
-      .attr('opacity', 0);
-    transition.remove();
-    return transition.end();
+  set_next(i: number, j: number | null) {
+    if (j !== null) {
+      this._edges.set(i, j);
+    } else {
+      this._edges.delete(i);
+    }
   }
 
-  static update(selection: d3.Selection<d3.BaseType, Data, any, unknown>) {
-    console.log('update');
-    const boxes = selection;
-    const boxes_update = boxes
-      .transition()
-      .duration(TRANSITION)
-      .attr(
-        'transform',
-        (d, i) => `translate(${x_scale(i)}, ${RECT_Y_OFFSET})`
-      );
-    return boxes_update.end();
+  set_value(i: number, value: string) {
+    const current_value = this._nodes.get(i);
+    if (current_value !== undefined) {
+      current_value.value = value;
+      this._nodes.set(i, current_value);
+    }
+  }
+
+  update_heads() {
+    this._heads = heads(this._nodes, this._edges);
   }
 
   async display() {
+    this.update_heads();
+
+    // Define the data to map to the boxes. Uses the entry points or heads
+    // to create a list of lists. Then flattens the list of lists into a
+    // list with all the data for each node.
+    const boxes_data: BoxData[] = this._heads
+      .map((k) => [...iterate(k, this._nodes, this._edges)])
+      .map((list, list_index) =>
+        list.map((datum, i) => {
+          return {
+            i: i,
+            id: datum.id,
+            value: datum.node.value,
+            list_index: list_index,
+            list_length: list.length,
+          };
+        })
+      )
+      .reduce((prev, curr) => prev.concat(curr), []);
+    console.log(this._heads);
+    console.log(boxes_data);
+
+    // Map the data to the boxes
     const boxes = this._container
       .selectAll('.box')
-      .data(this._data, (d) => (d as Data).value);
+      .data(boxes_data, (d) => (d as BoxData).id);
 
-    await Viz.exit(boxes);
-    await Viz.update(boxes);
-    return await Viz.enter(boxes);
-  }
+    const enter = (
+      selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
+    ) => {
+      const boxes_enter = selection
+        .enter()
+        .append('g')
+        .classed('box', true)
+        .attr(
+          'transform',
+          (d) => `translate(${x_scale(d.i)}, ${y_scale(d.list_index)})`
+        );
 
-  iterate(k: number) {
-    if (k === 0) {
-      return Promise.resolve();
-    }
-    // Fade in
-    let transition = this._iterator
-      .attr('transform', `translate(${x_scale(0)}, ${RECT_Y_OFFSET})`)
-      .attr('opacity', 0)
-      .transition()
-      .duration(FADE_IN)
-      .attr('opacity', 1);
+      boxes_enter
+        .append('rect')
+        .attr('width', RECT_WIDTH)
+        .attr('height', RECT_HEIGHT);
 
-    // Iterate
-    for (let i = 0; i < k; ++i) {
-      transition = transition
+      boxes_enter
+        .append('text')
+        .text((d) => d.value)
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'middle')
+        .attr('x', RECT_WIDTH / 2)
+        .attr('y', RECT_HEIGHT / 2);
+
+      const transition = boxes_enter
+        .attr('opacity', 0)
         .transition()
-        .duration(ITER_DURATION)
-        .attr('transform', `translate(${x_scale(i)}, ${RECT_Y_OFFSET})`);
-    }
+        .duration(FADE_IN)
+        .attr('opacity', 1);
 
-    return transition.end();
-  }
+      return transition.end();
+    };
 
-  async append(el: Data) {
-    return await this.insert(this._data.length, el);
-  }
+    const update = (
+      selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
+    ) => {
+      console.log('update');
+      const boxes_update = selection
+        .transition()
+        .duration(TRANSITION)
+        .attr(
+          'transform',
+          (d) => `translate(${x_scale(d.i)}, ${y_scale(d.list_index)})`
+        );
+      return boxes_update.end();
+    };
 
-  async pop(i = this._data.length) {
-    await this.iterate(i);
-    this._data.splice(i - 1, 1);
-    this.display();
-    return fade_out(this._iterator);
-  }
-
-  async insert(i: number, el: Data) {
-    await this.iterate(i);
-    this._data.splice(i, 0, el);
-    await this.display();
-    return fade_out(this._iterator);
+    await enter(boxes);
+    return await update(boxes);
   }
 }
 
-export async function test(element: HTMLElement): Promise<void> {
-  // SVG
+function update_viz(viz: Viz, operation: Operation) {
+  const op = operation.operation;
+  switch (op.operation) {
+    case 'init':
+      viz.init(op);
+      break;
+    case 'set_value':
+      viz.set_value(op.id, op.value);
+      break;
+    case 'get_value':
+      break;
+    case 'set_next':
+      viz.set_next(op.id, op.next);
+      break;
+    case 'get_next':
+      break;
+  }
+}
+
+export async function animate_operations(
+  element: HTMLElement,
+  ops: Operations
+): Promise<void> {
   const linked_list_viz = new Viz(element);
-
-  await linked_list_viz.append({ value: '1' });
-  await linked_list_viz.append({ value: '2' });
-  await linked_list_viz.append({ value: '3' });
-  await linked_list_viz.append({ value: '4' });
-  await linked_list_viz.append({ value: '5' });
-
-  await linked_list_viz.pop();
-  await linked_list_viz.pop();
-  await linked_list_viz.pop();
-
-  await linked_list_viz.insert(1, { value: '1.5' });
-  await linked_list_viz.insert(1, { value: '1.2' });
-  await linked_list_viz.insert(1, { value: '1.1' });
-
-  await linked_list_viz.insert(0, { value: '0.1' });
-  await linked_list_viz.insert(0, { value: '0.2' });
-  await linked_list_viz.insert(0, { value: '0.3' });
+  for (const op of ops.operations) {
+    update_viz(linked_list_viz, op);
+    await linked_list_viz.display();
+  }
+  return;
 }
 
 function pretty_print(operation: Operation): string {
