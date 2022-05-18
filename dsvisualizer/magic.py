@@ -1,8 +1,10 @@
+from functools import wraps
 import itertools
 from inspect import stack
+from types import FunctionType
 
-from .operations import *
-from .widget import OperationsWidget
+from dsvisualizer.operations import *
+from dsvisualizer.widget import OperationsWidget
 
 counter = itertools.count()
 
@@ -116,3 +118,36 @@ class NextField:
         if obj._next != UNINITIALIZED:
             get_logger().log(SetNext(obj._id, next._id if next else None), get_code())
         obj._next = next
+
+
+def wrapper(method):
+    @wraps(method)
+    def wrapped(*args, **kwargs):
+        with args[0]._logger:
+            res = method(*args, **kwargs)
+        return res
+
+    return wrapped
+
+
+class ContainerBase(type):
+    """This metaclass wraps classes that contain linked list nodes. It
+    makes sure that the methods of the class always use the logger
+    associated to that class."""
+
+    def __new__(mcs, name, bases, namespace):
+        new_namespace = {
+            name: wrapper(value)
+            if isinstance(value, FunctionType) and name != "__init__"
+            else value
+            for name, value in namespace.items()
+        }
+        return super().__new__(mcs, name, bases, new_namespace)
+
+
+class Container(metaclass=ContainerBase):
+    def __init__(self):
+        self._logger = Logger()
+
+    def visualize(self):
+        return self._logger.visualize()
