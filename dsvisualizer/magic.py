@@ -23,17 +23,33 @@ def set_logger(logger: "Logger"):
 
 class Logger:
     def __init__(self, logger: "Logger" = None):
+        self.visualized_upto = 0
         if logger:
             self.operations = logger.operations
         else:
             self.operations = Operations()
 
     def log(self, op: LinkedListOperation, source: str):
-        self.operations.operations.append(Operation(op, Metadata(True, source)))
+        self.operations.operations.append(
+            Operation(operation=op, metadata=Metadata(animate=True, source=source))
+        )
 
     def visualize(self):
+        # Only animate operations that haven't been animated yet
+        operations = Operations(
+            operations=[
+                Operation(
+                    operation=o.operation,
+                    metadata=Metadata(
+                        animate=i >= self.visualized_upto, source=o.metadata.source
+                    ),
+                )
+                for i, o in enumerate(self.operations.operations)
+            ]
+        )
         w = OperationsWidget()
-        w.operations = self.operations
+        w.operations = operations
+        self.visualized_upto = len(self.operations.operations)
         return w
 
     def copy(self):

@@ -31,16 +31,54 @@ function y_scale(i: number) {
   return OUTER_PADDING + 70 * i;
 }
 
-export function fade_in(
-  svg: d3.Selection<any, unknown, any, any>
+function fade(
+  selection: d3.Selection<any, any, any, unknown>,
+  initial_opacity = 0,
+  final_opacity = 1,
+  animate = true
+) {
+  if (animate) {
+    return selection
+      .attr('opacity', initial_opacity)
+      .transition()
+      .duration(FADE_IN)
+      .attr('opacity', final_opacity)
+      .end();
+  } else {
+    selection.attr('opacity', final_opacity);
+    return Promise.resolve();
+  }
+}
+
+function fade_in(
+  selection: d3.Selection<any, any, any, unknown>,
+  animate = true
 ): Promise<void> {
-  return svg.transition().duration(FADE_IN).attr('opacity', 1).end();
+  return fade(selection, 0, 1, animate);
 }
 
 export function fade_out(
-  svg: d3.Selection<any, unknown, any, any>
+  selection: d3.Selection<any, any, any, unknown>,
+  animate = true
 ): Promise<void> {
-  return svg.transition().duration(FADE_IN).attr('opacity', 0).end();
+  return fade(selection, 1, 0, animate);
+}
+
+function transform(
+  selection: d3.Selection<any, any, any, unknown>,
+  transform: (d: any) => string,
+  animate = true
+): Promise<void> {
+  if (animate) {
+    return selection
+      .transition()
+      .duration(TRANSITION)
+      .attr('transform', transform)
+      .end();
+  } else {
+    selection.attr('transform', transform);
+    return Promise.resolve();
+  }
 }
 
 export function append_arrow(
@@ -161,7 +199,7 @@ class Viz {
     this._heads = heads(this._nodes, this._edges);
   }
 
-  async display() {
+  async display(animate = true) {
     this.update_heads();
 
     // Define the data to map to the boxes. Uses the entry points or heads
@@ -181,8 +219,6 @@ class Viz {
         })
       )
       .reduce((prev, curr) => prev.concat(curr), []);
-    console.log(this._heads);
-    console.log(boxes_data);
 
     // Map the data to the boxes
     const boxes = this._container
@@ -192,6 +228,7 @@ class Viz {
     const enter = (
       selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
     ) => {
+      console.log('enter');
       const boxes_enter = selection
         .enter()
         .append('g')
@@ -214,31 +251,23 @@ class Viz {
         .attr('x', RECT_WIDTH / 2)
         .attr('y', RECT_HEIGHT / 2);
 
-      const transition = boxes_enter
-        .attr('opacity', 0)
-        .transition()
-        .duration(FADE_IN)
-        .attr('opacity', 1);
-
-      return transition.end();
+      return fade_in(boxes_enter, animate);
     };
 
     const update = (
       selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
     ) => {
       console.log('update');
-      const boxes_update = selection
-        .transition()
-        .duration(TRANSITION)
-        .attr(
-          'transform',
-          (d) => `translate(${x_scale(d.i)}, ${y_scale(d.list_index)})`
-        );
-      return boxes_update.end();
+      return transform(
+        selection,
+        (d) => `translate(${x_scale(d.i)}, ${y_scale(d.list_index)})`,
+        animate
+      );
     };
 
     await enter(boxes);
-    return await update(boxes);
+    await update(boxes);
+    return console.log('finish');
   }
 }
 
@@ -268,7 +297,7 @@ export async function animate_operations(
   const linked_list_viz = new Viz(element);
   for (const op of ops.operations) {
     update_viz(linked_list_viz, op);
-    await linked_list_viz.display();
+    await linked_list_viz.display(op.metadata.animate);
   }
   return;
 }
@@ -293,13 +322,13 @@ function pretty_print(operation: Operation): string {
       msg = '';
       break;
   }
-  return `${op.operation}(${msg})`;
+  return `${op.operation}(${msg}) animate=${operation.metadata.animate} source="${operation.metadata.source}"`;
 }
 
 export async function display(
   element: HTMLElement,
   ops: Operations
 ): Promise<void> {
-  const text = ops.operations.map(pretty_print).join('\n');
+  const text = ops.operations.map(pretty_print).join('');
   element.innerText = text;
 }
