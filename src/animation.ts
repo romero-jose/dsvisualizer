@@ -82,9 +82,9 @@ function transform(
 }
 
 export function append_arrow(
-  svg: d3.Selection<any, unknown, any, any>,
+  svg: d3.Selection<any, any, any, unknown>,
   length: number
-): d3.Selection<SVGGElement, unknown, any, any> {
+): d3.Selection<SVGGElement, any, any, unknown> {
   const arrow = svg.append('g').attr('class', 'arrow');
 
   // Stem
@@ -250,6 +250,11 @@ class Viz {
         .attr('dominant-baseline', 'middle')
         .attr('x', RECT_WIDTH / 2)
         .attr('y', RECT_HEIGHT / 2);
+
+      append_arrow(boxes_enter, INNER_PADDING).attr(
+        'transform',
+        `translate(${RECT_WIDTH}, ${RECT_HEIGHT / 2})`
+      );
 
       return fade_in(boxes_enter, animate);
     };
