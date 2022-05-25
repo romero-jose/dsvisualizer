@@ -11,7 +11,7 @@ import {
 import '../css/widget.css';
 import { operation_serializers, Operations } from './serializers';
 
-import { animate_operations, display } from './animation';
+import { animate_operations } from './animation';
 
 export class OperationsModel extends DOMWidgetModel {
   defaults() {
@@ -50,7 +50,6 @@ export class OperationsView extends DOMWidgetView {
   value_changed(): void {
     console.log('value changed:');
     console.log(this.operations);
-    display(this.p, this.operations);
   }
 
   get operations(): Operations {
