@@ -8,7 +8,7 @@ const RECT_WIDTH = 100;
 const RECT_HEIGHT = 50;
 // const RECT_Y_OFFSET = 100;
 
-// const ITER_HEIGHT = 30;
+const ITER_HEIGHT = 30;
 // const ITER_PADDING = 5;
 
 const OUTER_PADDING = 20;
@@ -30,6 +30,9 @@ function x_scale(i: number) {
 function y_scale(i: number) {
   return OUTER_PADDING + 70 * i;
 }
+
+const layout = (i: number, j: number) =>
+  `translate(${x_scale(i)}, ${y_scale(j)})`;
 
 function fade(
   selection: d3.Selection<any, any, any, unknown>,
@@ -66,14 +69,14 @@ export function fade_out(
 
 function transform(
   selection: d3.Selection<any, any, any, unknown>,
-  transform: (d: any) => string,
+  transform: ((d: any) => string) | string,
   animate = true
 ): Promise<void> {
   if (animate) {
     return selection
       .transition()
       .duration(TRANSITION)
-      .attr('transform', transform)
+      .attr('transform', <any>transform)
       .end();
   } else {
     selection.attr('transform', transform);
@@ -145,6 +148,8 @@ class Viz {
   private _nodes: Map<number, VizNode>;
   private _edges: Map<number, number>;
   private _heads: number[];
+  private _iterator: d3.Selection<SVGGElement, unknown, any, any>;
+  private _data: BoxData[];
 
   constructor(element: HTMLElement) {
     // Container
@@ -170,6 +175,33 @@ class Viz {
 
     this._nodes = new Map<number, VizNode>();
     this._edges = new Map<number, number>();
+
+    const iterator = this._container.append('g').attr('class', 'iterator');
+    append_arrow(iterator, ITER_HEIGHT).attr(
+      'transform',
+      `rotate(${90}) translate(${-ITER_HEIGHT}, ${-RECT_WIDTH / 2})`
+    );
+
+    this._iterator = iterator;
+  }
+
+  async iterate(id: number, animate: boolean) {
+    console.log('iterate  id: ', id, 'animate: ', animate);
+    if (!animate) {
+      return;
+    }
+    const datum = this._data.find((d) => d.id === id);
+    if (!datum) {
+      console.error('No datum for element ', id);
+      return;
+    }
+    const i = datum.i;
+    const j = datum.list_index;
+    transform(this._iterator, layout(i - 1, j), false);
+    await fade_in(this._iterator);
+    await transform(this._iterator, layout(i, j));
+    fade_out(this._iterator);
+    return;
   }
 
   init(op: Init) {
@@ -199,9 +231,7 @@ class Viz {
     this._heads = heads(this._nodes, this._edges);
   }
 
-  async display(animate = true) {
-    this.update_heads();
-
+  update_data() {
     // Define the data to map to the boxes. Uses the entry points or heads
     // to create a list of lists. Then flattens the list of lists into a
     // list with all the data for each node.
@@ -219,11 +249,18 @@ class Viz {
         })
       )
       .reduce((prev, curr) => prev.concat(curr), []);
+    this._data = boxes_data;
+    console.log(boxes_data);
+  }
+
+  async display(animate = true) {
+    this.update_heads();
+    this.update_data();
 
     // Map the data to the boxes
     const boxes = this._container
       .selectAll('.box')
-      .data(boxes_data, (d) => (d as BoxData).id);
+      .data(this._data, (d) => (d as BoxData).id);
 
     const enter = (
       selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
@@ -233,10 +270,7 @@ class Viz {
         .enter()
         .append('g')
         .classed('box', true)
-        .attr(
-          'transform',
-          (d) => `translate(${x_scale(d.i)}, ${y_scale(d.list_index)})`
-        );
+        .attr('transform', (d) => layout(d.i, d.list_index));
 
       boxes_enter
         .append('rect')
@@ -263,11 +297,7 @@ class Viz {
       selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
     ) => {
       console.log('update');
-      return transform(
-        selection,
-        (d) => `translate(${x_scale(d.i)}, ${y_scale(d.list_index)})`,
-        animate
-      );
+      return transform(selection, (d) => layout(d.i, d.list_index), animate);
     };
 
     await enter(boxes);
@@ -276,23 +306,29 @@ class Viz {
   }
 }
 
-function update_viz(viz: Viz, operation: Operation) {
+async function update_viz(viz: Viz, operation: Operation) {
   const op = operation.operation;
+  const animate = operation.metadata.animate;
   switch (op.operation) {
     case 'init':
       viz.init(op);
       break;
     case 'set_value':
+      // await viz.iterate(op.id, animate);
       viz.set_value(op.id, op.value);
       break;
     case 'get_value':
+      // await viz.iterate(op.id, animate);
       break;
     case 'set_next':
+      // await viz.iterate(op.id, animate);
       viz.set_next(op.id, op.next);
       break;
     case 'get_next':
+      await viz.iterate(op.id, animate);
       break;
   }
+  await viz.display(animate);
 }
 
 export async function animate_operations(
@@ -301,8 +337,7 @@ export async function animate_operations(
 ): Promise<void> {
   const linked_list_viz = new Viz(element);
   for (const op of ops.operations) {
-    update_viz(linked_list_viz, op);
-    await linked_list_viz.display(op.metadata.animate);
+    await update_viz(linked_list_viz, op);
   }
   return;
 }
