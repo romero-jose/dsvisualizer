@@ -11,7 +11,7 @@ const RECT_HEIGHT = 50;
 const ITER_HEIGHT = 30;
 // const ITER_PADDING = 5;
 
-const OUTER_PADDING = 20;
+const OUTER_PADDING = 40;
 const INNER_PADDING = 50;
 const STEP = 100;
 
@@ -335,40 +335,13 @@ export async function animate_operations(
   element: HTMLElement,
   ops: Operations
 ): Promise<void> {
+  const code = d3.select(element).append('code').attr('class', 'source-code');
   const linked_list_viz = new Viz(element);
+
   for (const op of ops.operations) {
+    code.text(op.metadata.source);
     await update_viz(linked_list_viz, op);
   }
+  code.text('');
   return;
-}
-
-function pretty_print(operation: Operation): string {
-  const op = operation.operation;
-  let msg: string;
-  switch (op.operation) {
-    case 'init':
-      msg = `${op.value}, ${op.next}`;
-      break;
-    case 'set_value':
-      msg = `${op.value}`;
-      break;
-    case 'get_value':
-      msg = '';
-      break;
-    case 'set_next':
-      msg = `${op.next}`;
-      break;
-    case 'get_next':
-      msg = '';
-      break;
-  }
-  return `${op.operation}(${msg}) animate=${operation.metadata.animate} source="${operation.metadata.source}"`;
-}
-
-export async function display(
-  element: HTMLElement,
-  ops: Operations
-): Promise<void> {
-  const text = ops.operations.map(pretty_print).join('');
-  element.innerText = text;
 }
