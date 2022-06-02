@@ -335,13 +335,18 @@ export async function animate_operations(
   element: HTMLElement,
   ops: Operations
 ): Promise<void> {
-  const code = d3.select(element).append('code').attr('class', 'source-code');
+  const code = d3
+    .select(element)
+    .append('div')
+    .attr('class', 'source-code-container')
+    .text('Source: ')
+    .append('code')
+    .attr('class', 'source-code');
   const linked_list_viz = new Viz(element);
 
   for (const op of ops.operations) {
     code.text(op.metadata.source);
     await update_viz(linked_list_viz, op);
   }
-  code.text('');
   return;
 }
