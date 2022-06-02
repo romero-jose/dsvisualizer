@@ -34,7 +34,7 @@ class Logger:
             Operation(operation=op, metadata=Metadata(animate=True, source=source))
         )
 
-    def visualize(self):
+    def visualize(self, container: "Container" = None):
         # Only animate operations that haven't been animated yet
         operations = Operations(
             operations=[
@@ -45,7 +45,9 @@ class Logger:
                     ),
                 )
                 for i, o in enumerate(self.operations.operations)
-            ]
+            ],
+            # TODO: Fill in the metadata
+            metadata=VisualizationMetadata(),
         )
         w = OperationsWidget()
         w.operations = operations
@@ -166,4 +168,4 @@ class Container(metaclass=ContainerBase):
         self._logger = Logger()
 
     def visualize(self):
-        return self._logger.visualize()
+        return self._logger.visualize(self)
