@@ -300,8 +300,8 @@ class Viz {
       return transform(selection, (d) => layout(d.i, d.list_index), animate);
     };
 
-    await enter(boxes);
     await update(boxes);
+    await enter(boxes);
     return console.log('finish');
   }
 }
