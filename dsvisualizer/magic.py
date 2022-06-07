@@ -106,3 +106,104 @@ class Container(metaclass=ContainerBase):
 
     def visualize(self):
         return self._logger.visualize()
+
+
+def container():
+    """
+    This decorator declares the class as a linked list container so it can be visualized.
+
+    Example:
+
+    >>> @visualize()
+        class List:
+            def __init__(self):
+                self.head = None
+            def append(self, v):
+                if self.head is None:
+                    self.head = Node(v, None)
+                    return
+                n = self.head
+                while n.next is not None:
+                    n = n.next
+                n.next = Node(v, None)
+    """
+
+    def decorator(cls):
+        init = cls.__init__
+
+        def __init__(self):
+            self._logger = Logger()
+            init(self)
+
+        def visualize(self):
+            return self._logger.visualize()
+
+        for name in dir(cls):
+            value = getattr(cls, name)
+            if isinstance(value, FunctionType) and name != "__init__":
+                setattr(cls, name, wrapper(value))
+
+        setattr(cls, "__init__", __init__)
+        setattr(cls, "visualize", visualize)
+        return cls
+
+    return decorator
+
+
+def node(value_field: str = "value", next_field: str = "next"):
+    """
+    This decorator declares the class as a linked list node so it can be visualized.
+
+    `value_field`: Name of the field that holds the value of the node.
+
+    `next_field`: Name of the field that holds the next node in the linked list.
+
+    Example:
+
+    >>> @node('head', 'tail')
+        class Node:
+            def __init__(self, head, tail=None):
+                self.head = head
+                self.tail = tail
+    """
+
+    def decorator(cls):
+        init = cls.__init__
+
+        setattr(cls, value_field, ValueField())
+        setattr(cls, next_field, NextField())
+
+        def __init__(self, *args, **kwargs):
+            self._next = UNINITIALIZED
+            self._value = UNINITIALIZED
+            self._id = next(counter)
+            init(self, *args, **kwargs)
+
+            if value_field in kwargs:
+                value = kwargs[value_field]
+                n = kwargs.get(next_field, None)._id
+            else:
+                value = args[0]
+                n = args[1]._id if args[1] else None
+
+            get_logger().log(Init(self._id, value, n), get_code())
+
+        def __repr__(self):
+            return f"({self._get_class_name()} {self._value} {self._next})"
+
+        def _get_class_name(self):
+            return self.__class__.__name__
+
+        def visualize(self):
+            w = OperationsWidget()
+            w.operations = get_logger().operations
+            return w
+
+        setattr(cls, "__init__", __init__)
+        setattr(cls, "__repr__", __repr__)
+        setattr(cls, "_get_class_name", _get_class_name)
+        setattr(cls, "visualize", visualize)
+
+        return cls
+
+    return decorator
