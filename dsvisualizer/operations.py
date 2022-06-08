@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Union
+from typing import Any, Union, List
 
 
 @dataclass(frozen=True)
@@ -58,5 +58,5 @@ class VisualizationMetadata:
 
 @dataclass(frozen=True)
 class Operations:
-    operations: list[Operation] = field(default_factory=list)
+    operations: List[Operation] = field(default_factory=list)
     metadata: VisualizationMetadata = VisualizationMetadata()

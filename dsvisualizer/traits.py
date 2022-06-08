@@ -1,5 +1,5 @@
 from traitlets import TraitType
-from typing import Any
+from typing import Any, Dict
 from dataclasses import asdict
 from dsvisualizer.operations import (
     Init,
@@ -14,7 +14,7 @@ from dsvisualizer.operations import (
 )
 
 
-def serialize_op(obj: dict[str, Any]) -> LinkedListOperation:
+def serialize_op(obj: Dict[str, Any]) -> LinkedListOperation:
     operation = obj["operation"]
     if operation == "init":
         return Init(id=obj["id"], value=obj["value"], next=obj["next"])
@@ -28,7 +28,7 @@ def serialize_op(obj: dict[str, Any]) -> LinkedListOperation:
         return SetNext(id=obj["id"], next=obj["next"])
 
 
-def deserialize_operation(obj: dict[str, Any]) -> Operation:
+def deserialize_operation(obj: Dict[str, Any]) -> Operation:
     return Operation(
         operation=serialize_op(obj["operation"]), metadata=Metadata(**obj["metadata"])
     )
@@ -39,11 +39,11 @@ class OperationTrait(TraitType):
     default_value = Operations()
 
 
-def serialize_operations(ops: Operations) -> dict[str, Any]:
+def serialize_operations(ops: Operations) -> Dict[str, Any]:
     return asdict(ops)
 
 
-def deserialize_operations(obj: dict[str, Any]) -> Operations:
+def deserialize_operations(obj: Dict[str, Any]) -> Operations:
     return Operations(operations=[deserialize_operation(op) for op in obj["operations"]])
 
 
