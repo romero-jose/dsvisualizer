@@ -1,6 +1,7 @@
 from functools import wraps
 import itertools
-from inspect import stack
+from inspect import FrameInfo, stack
+import linecache
 from types import FunctionType
 
 from dsvisualizer.widget import OperationsWidget
@@ -18,8 +19,30 @@ class Uninitialized:
 UNINITIALIZED = Uninitialized()
 
 
+def fmt_stack_entry(frame: FrameInfo, lines_before=2, lines_after=2):
+    filename = frame.filename
+    lineno = frame.lineno
+
+    lines = linecache.getlines(filename)
+    start = max(0, lineno - lines_before)
+    stop = min(len(lines), lineno + lines_after)
+    formatted_lines = (
+        f"{'-->' if n == lineno - 1 else '   '}[{n:3d}]{l}"
+        for l, n in zip(itertools.islice(lines, start, stop), range(start, stop))
+    )
+
+    return "".join(formatted_lines)
+
+
 def get_code(depth=0):
-    return stack()[2 + depth].code_context[0]
+    s = stack()
+    callee = s[2 + depth]
+    formatted = fmt_stack_entry(callee)
+    if s[3 + depth].function == "wrapped":
+        caller = s[4 + depth]
+        return f"{caller.code_context[0]}{formatted}"
+    else:
+        return formatted
 
 
 class LinkedListMixin:
