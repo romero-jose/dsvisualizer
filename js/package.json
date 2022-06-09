@@ -37,8 +37,8 @@
     "build:nbextension": "webpack",
     "clean": "yarn run clean:lib && yarn run clean:nbextension && yarn run clean:labextension",
     "clean:lib": "rimraf lib",
-    "clean:labextension": "rimraf dsvisualizer/labextension",
-    "clean:nbextension": "rimraf dsvisualizer/nbextension/static/index.js",
+    "clean:labextension": "rimraf ../dsvisualizer/labextension",
+    "clean:nbextension": "rimraf ../dsvisualizer/nbextension/static/index.js",
     "lint": "eslint . --ext .ts,.tsx --fix",
     "lint:check": "eslint . --ext .ts,.tsx",
     "prepack": "yarn run build:lib",
@@ -85,7 +85,7 @@
   },
   "jupyterlab": {
     "extension": "lib/plugin",
-    "outputDir": "dsvisualizer/labextension/",
+    "outputDir": "../dsvisualizer/labextension/",
     "sharedPackages": {
       "@jupyter-widgets/base": {
         "bundled": false,

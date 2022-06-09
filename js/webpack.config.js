@@ -27,7 +27,7 @@ module.exports = [
     entry: './src/extension.ts',
     output: {
       filename: 'index.js',
-      path: path.resolve(__dirname, 'dsvisualizer', 'nbextension'),
+      path: path.resolve(__dirname, '..', 'dsvisualizer', 'nbextension'),
       libraryTarget: 'amd',
       publicPath: '',
     },
@@ -76,7 +76,7 @@ module.exports = [
     entry: './src/index.ts',
     output: {
       filename: 'embed-bundle.js',
-      path: path.resolve(__dirname, 'docs', 'source', '_static'),
+      path: path.resolve(__dirname, '..', 'docs', 'source', '_static'),
       library: "dsvisualizer",
       libraryTarget: 'amd'
     },

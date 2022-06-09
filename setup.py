@@ -21,6 +21,7 @@ from jupyter_packaging import (
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+JS_DIR = os.path.join(HERE, 'js')
 
 
 
@@ -34,8 +35,8 @@ version = get_version(pjoin(name, '_version.py'))
 
 # Representative files that should exist after a successful build
 jstargets = [
-    pjoin(HERE, name, 'nbextension', 'index.js'),
-    pjoin(HERE, name, 'labextension', 'package.json'),
+    os.path.join('dsvisualizer/nbextension', 'index.js'),
+    os.path.join('dsvisualizer/labextension', 'package.json'),
 ]
 
 
@@ -58,7 +59,7 @@ data_files_spec = [
 cmdclass = create_cmdclass('jsdeps', package_data_spec=package_data_spec,
     data_files_spec=data_files_spec)
 npm_install = combine_commands(
-    install_npm(HERE, build_cmd='build:prod'),
+    install_npm(JS_DIR, build_cmd='build:prod'),
     ensure_targets(jstargets),
 )
 cmdclass['jsdeps'] = skip_if_exists(jstargets, npm_install)
@@ -83,10 +84,11 @@ setup_args = dict(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Framework :: Jupyter',
     ],
     include_package_data = True,
