@@ -1,5 +1,5 @@
 {
-  "name": "dsvisualizer",
+  "name": "jupyter-dsvisualizer",
   "version": "0.1.0",
   "description": "A simple data structure visualizer for Jupyter Notebooks",
   "keywords": [
