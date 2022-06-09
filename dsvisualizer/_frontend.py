@@ -8,5 +8,5 @@
 Information about the frontend package of the widgets.
 """
 
-module_name = "dsvisualizer"
-module_version = "^0.1.0"
+module_name = "jupyter-dsvisualizer"
+module_version = "^0.1.1"
