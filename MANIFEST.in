@@ -26,7 +26,7 @@ graft tests
 prune tests/build
 
 # Javascript files
-graft js/dsvisualizer/nbextension
+graft dsvisualizer/nbextension
 graft js/src
 graft js/css
 prune **/node_modules

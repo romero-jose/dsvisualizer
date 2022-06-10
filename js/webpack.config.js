@@ -55,8 +55,8 @@ module.exports = [
         filename: 'index.js',
         path: path.resolve(__dirname, 'dist'),
         libraryTarget: 'amd',
-        library: "dsvisualizer",
-        publicPath: 'https://unpkg.com/dsvisualizer@' + version + '/dist/'
+        library: "jupyter-dsvisualizer",
+        publicPath: 'https://unpkg.com/jupyter-dsvisualizer@' + version + '/dist/'
     },
     devtool: 'source-map',
     module: {
@@ -77,7 +77,7 @@ module.exports = [
     output: {
       filename: 'embed-bundle.js',
       path: path.resolve(__dirname, '..', 'docs', 'source', '_static'),
-      library: "dsvisualizer",
+      library: "jupyter-dsvisualizer",
       libraryTarget: 'amd'
     },
     module: {
