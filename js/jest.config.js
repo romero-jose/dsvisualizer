@@ -7,7 +7,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testPathIgnorePatterns: ['/lib/', '/node_modules/'],
   testRegex: '/__tests__/.*.spec.ts[x]?$',
-  transformIgnorePatterns: ['/node_modules/(?!(@jupyter(lab|-widgets)/.*)/)'],
+  transformIgnorePatterns: ['/node_modules/(?!(@jupyterlab|@jupyter-widgets|d3)/.*)/'],
   globals: {
     'ts-jest': {
       tsconfig: '<rootDir>/tsconfig.json',
