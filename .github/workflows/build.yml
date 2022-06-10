@@ -19,8 +19,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        python-version: [3.8]
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.7', '3.10']
 
     steps:
     - uses: actions/checkout@v2
@@ -32,13 +32,22 @@ jobs:
         channels: conda-forge
 
     - name: Mamba install dependencies
-      run: mamba install python=${{ matrix.python-version }} pip nodejs flake8
+      run: mamba install python=${{ matrix.python-version }} pip nodejs
 
     - name: Mamba install dependencies
       run: mamba install jupyterlab ipywidgets jupyter-packaging~=0.7.9
 
-    - name: Install ipyleaflet
-      run: pip install .
+    - name: Install dsvisualizer
+      run: pip install -e ".[test, examples]"
 
     - name: Import check
       run: python -c 'import dsvisualizer'
+
+    - name: Test JavaScript
+      run: |
+        pushd js
+        npm run test
+        popd
+
+    - name: Test Python
+      run: python -m pytest
