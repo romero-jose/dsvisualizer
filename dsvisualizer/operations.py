@@ -39,7 +39,7 @@ class GetNext:
 @dataclass(frozen=True)
 class Metadata:
     animate: bool
-    source: str
+    source: List[str]
 
 
 LinkedListOperation = Union[Init, SetValue, GetValue, SetNext, GetNext]

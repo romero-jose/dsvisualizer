@@ -36,7 +36,7 @@ export type LinkedListOperation =
 
 export type Metadata = {
   animate: boolean;
-  source: string;
+  source: string[];
 };
 
 export type Operation = {

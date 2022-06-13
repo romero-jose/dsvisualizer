@@ -339,13 +339,16 @@ export async function animate_operations(
     .select(element)
     .append('div')
     .attr('class', 'source-code-container')
-    .text('Source: ')
-    .append('code')
-    .attr('class', 'source-code');
+    .text('Source: ');
+
   const linked_list_viz = new Viz(element);
 
   for (const op of ops.operations) {
-    code.text(op.metadata.source);
+    code.select('.source-code').remove();
+    const pre = code.append('pre').attr('class', 'source-code');
+    for (const line of op.metadata.source) {
+      pre.append('code').text(line);
+    }
     await update_viz(linked_list_viz, op);
   }
   return;
