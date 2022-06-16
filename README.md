@@ -15,12 +15,6 @@ You can install using `pip`:
 pip install dsvisualizer
 ```
 
-If you are using Jupyter Notebook 5.2 or earlier, you may also need to enable
-the nbextension:
-```bash
-jupyter nbextension enable --py [--sys-prefix|--user|--system] dsvisualizer
-```
-
 ## Development Installation
 
 Create a dev environment:
