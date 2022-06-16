@@ -4,12 +4,14 @@ on:
   release:
     types: [created]
 
+  workflow_dispatch:
+
 defaults:
   run:
     shell: bash -l {0}
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -21,7 +23,7 @@ jobs:
         channels: conda-forge
 
     - name: Mamba install dependencies
-      run: mamba install python nodejs releasewidgets notebook yarn twine jupyterlab=3 jupyter-packaging python-build
+      run: mamba install python nodejs notebook yarn twine jupyterlab=3 jupyter-packaging python-build
 
     - name: build dsvisualizer
       run: |
@@ -30,9 +32,9 @@ jobs:
 
     - name: Publish js library
       uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: js/package.json
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        package: js/package.json
 
     - name: Publish Python package
       uses: pypa/gh-action-pypi-publish@release/v1
