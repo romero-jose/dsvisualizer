@@ -1,7 +1,5 @@
 from functools import wraps
 import itertools
-from inspect import FrameInfo, stack
-import linecache
 from types import FunctionType
 
 from dsvisualizer.widget import OperationsWidget
@@ -19,35 +17,6 @@ class Uninitialized:
 UNINITIALIZED = Uninitialized()
 
 
-def fmt_stack_entry(frame: FrameInfo, lines_before=2, lines_after=2):
-    filename = frame.filename
-    lineno = frame.lineno
-
-    lines = linecache.getlines(filename)
-    start = max(0, lineno - lines_before)
-    stop = min(len(lines), lineno + lines_after)
-
-    digits = len(str(stop))
-
-    formatted_lines = [
-        f"{'> ' if n == lineno else '  '}{n:{digits}d} {l}"
-        for l, n in zip(itertools.islice(lines, start, stop), range(start + 1, stop + 1))
-    ]
-
-    return formatted_lines
-
-
-def get_code(depth=0):
-    s = stack()
-    callee = s[2 + depth]
-    formatted = fmt_stack_entry(callee)
-    if s[3 + depth].function == "wrapped":
-        caller = s[4 + depth]
-        return [caller.code_context[0]] + formatted
-    else:
-        return formatted
-
-
 class LinkedListMixin:
     _value = UNINITIALIZED
     _next = UNINITIALIZED
@@ -56,9 +25,7 @@ class LinkedListMixin:
         obj = super(LinkedListMixin, cls).__new__(cls)
         obj._id = next(counter)
         # TODO: Replace with a more robust method for obtaining the args
-        get_logger().log(
-            Init(obj._id, args[0], args[1]._id if args[1] else None), get_code()
-        )
+        get_logger().log(Init(obj._id, args[0], args[1]._id if args[1] else None))
         return obj
 
     def __repr__(self):
@@ -78,12 +45,12 @@ class ValueField:
         self.name = name
 
     def __get__(self, obj: LinkedListMixin, objtype=None):
-        get_logger().log(GetValue(obj._id), get_code())
+        get_logger().log(GetValue(obj._id))
         return obj._value
 
     def __set__(self, obj: LinkedListMixin, value):
         if obj._value != UNINITIALIZED:
-            get_logger().log(SetValue(obj._id, value), get_code())
+            get_logger().log(SetValue(obj._id, value))
         obj._value = value
 
 
@@ -92,12 +59,12 @@ class NextField:
         self.name = name
 
     def __get__(self, obj: LinkedListMixin, objtype=None):
-        get_logger().log(GetNext(obj._id), get_code())
+        get_logger().log(GetNext(obj._id))
         return obj._next
 
     def __set__(self, obj, next):
         if obj._next != UNINITIALIZED:
-            get_logger().log(SetNext(obj._id, next._id if next else None), get_code())
+            get_logger().log(SetNext(obj._id, next._id if next else None))
         obj._next = next
 
 
@@ -134,9 +101,15 @@ class Container(metaclass=ContainerBase):
         return self._logger.visualize()
 
 
-def container():
+def container(lines_before=2, lines_after=2):
     """
-    This decorator declares the class as a linked list container so it can be visualized.
+    This decorator declares the class as a linked list container so it can be
+    visualized. The visualization shows the source code around the lines that
+    use the data structure.
+
+    `lines_before`: Number of lines before to be displayed.
+
+    `next_field`: Number of lines after to be displayed.
 
     Example:
 
@@ -158,7 +131,7 @@ def container():
         init = cls.__init__
 
         def __init__(self):
-            self._logger = Logger()
+            self._logger = Logger(lines_before=lines_before, lines_after=lines_after)
             init(self)
 
         def visualize(self):
@@ -212,7 +185,7 @@ def node(value_field: str = "value", next_field: str = "next"):
                 value = args[0]
                 n = args[1]._id if args[1] else None
 
-            get_logger().log(Init(self._id, value, n), get_code())
+            get_logger().log(Init(self._id, value, n))
 
         def __repr__(self):
             return f"({self._get_class_name()} {self._value} {self._next})"
@@ -221,6 +194,10 @@ def node(value_field: str = "value", next_field: str = "next"):
             return self.__class__.__name__
 
         def visualize(self):
+            """
+            Visualizes the logged operations in this container. Only animates
+            the operations that haven't been animated yet.
+            """
             w = OperationsWidget()
             w.operations = get_logger().operations
             return w
