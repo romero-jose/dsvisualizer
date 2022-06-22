@@ -5,7 +5,13 @@
 [![codecov](https://codecov.io/gh/romero-jose/dsvisualizer/branch/master/graph/badge.svg)](https://codecov.io/gh/romero-jose/dsvisualizer)
 
 
-A simple data structure visualizer for Jupyter Notebooks
+A simple data structure visualizer for Jupyter Notebooks.
+
+## Usage
+
+Visualizing a linked list implementation:
+
+![Usage](usage.gif)
 
 ## Installation
 
@@ -14,6 +20,17 @@ You can install using `pip`:
 ```bash
 pip install dsvisualizer
 ```
+
+<details>
+<summary>If using Google Colab</summary>
+
+You need to run the following snippet to enabe custom widgets.
+
+```py
+from google.colab import output
+output.enable_custom_widget_manager()
+```
+</details>
 
 ## Development Installation
 
