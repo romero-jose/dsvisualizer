@@ -9,7 +9,7 @@ A simple data structure visualizer for Jupyter Notebooks.
 
 ## Usage
 
-Visualizing a linked list implementation:
+To visualize your linked list implementation import the library and add the corresponding decorators to the linked list node and container.
 
 ![Usage](usage.gif)
 
