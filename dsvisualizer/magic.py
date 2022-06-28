@@ -2,7 +2,6 @@ from functools import wraps
 import itertools
 from types import FunctionType
 
-from dsvisualizer.widget import OperationsWidget
 from dsvisualizer.operations import Init, GetNext, GetValue, SetNext, SetValue
 from dsvisualizer.logger import Logger, get_logger
 
@@ -35,9 +34,7 @@ class LinkedListMixin:
         return self.__class__.__name__
 
     def visualize(self):
-        w = OperationsWidget()
-        w.operations = get_logger().operations
-        return w
+        return get_logger().visualize()
 
 
 class ValueField:
@@ -195,12 +192,12 @@ def node(value_field: str = "value", next_field: str = "next"):
 
         def visualize(self):
             """
-            Visualizes the logged operations in this container. Only animates
-            the operations that haven't been animated yet.
+            Visualizes the logged operations in the current logger. If the node
+            belongs to a container the current logger is the logger of that
+            container. Only animates the operations that haven't been animated
+            yet.
             """
-            w = OperationsWidget()
-            w.operations = get_logger().operations
-            return w
+            return get_logger().visualize()
 
         setattr(cls, "__init__", __init__)
         setattr(cls, "__repr__", __repr__)
