@@ -24,7 +24,7 @@ pip install dsvisualizer
 <details>
 <summary>If using Google Colab</summary>
 
-You need to run the following snippet to enabe custom widgets.
+You need to run the following snippet to enable custom widgets.
 
 ```py
 from google.colab import output
