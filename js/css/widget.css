@@ -13,6 +13,7 @@
 @media (prefers-color-scheme: dark) {
   .viz .arrow {
     stroke: white;
+    fill: white;
   }
 
   .viz .arrow line {
