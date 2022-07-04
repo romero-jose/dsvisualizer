@@ -19,7 +19,7 @@ export class OperationsModel extends DOMWidgetModel {
       ...super.defaults(),
       _model_name: 'OperationsModel',
       _view_name: 'OperationsView',
-      operations: <Operations>{ operations: [] },
+      operations: <Operations>{ operations: [], metadata: {} },
     };
   }
 

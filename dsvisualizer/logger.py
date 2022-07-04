@@ -76,7 +76,9 @@ class Logger:
             )
         )
 
-    def visualize(self) -> OperationsWidget:
+    def visualize(
+        self, transition_duration=1000, fade_in_duration=1000
+    ) -> OperationsWidget:
         """
         Visualizes the logged operations. Only animates the operations that
         haven't been animated yet.
@@ -91,8 +93,10 @@ class Logger:
                 )
                 for i, o in enumerate(self.operations.operations)
             ],
-            # TODO: Fill in the visualization metadata
-            metadata=VisualizationMetadata(),
+            metadata=VisualizationMetadata(
+                transition_duration=transition_duration,
+                fade_in_duration=fade_in_duration,
+            ),
         )
         w = OperationsWidget()
         w.operations = operations

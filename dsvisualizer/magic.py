@@ -33,8 +33,10 @@ class LinkedListMixin:
     def _get_class_name(self):
         return self.__class__.__name__
 
-    def visualize(self):
-        return get_logger().visualize()
+    def visualize(self, transition_duration=1000, fade_in_duration=1000):
+        return get_logger().visualize(
+            transition_duration=transition_duration, fade_in_duration=fade_in_duration
+        )
 
 
 class ValueField:
@@ -94,8 +96,10 @@ class Container(metaclass=ContainerBase):
     def __init__(self):
         self._logger = Logger()
 
-    def visualize(self):
-        return self._logger.visualize()
+    def visualize(self, transition_duration=1000, fade_in_duration=1000):
+        return self._logger.visualize(
+            transition_duration=transition_duration, fade_in_duration=fade_in_duration
+        )
 
 
 def container(lines_before=2, lines_after=2):
@@ -131,8 +135,11 @@ def container(lines_before=2, lines_after=2):
             self._logger = Logger(lines_before=lines_before, lines_after=lines_after)
             init(self)
 
-        def visualize(self):
-            return self._logger.visualize()
+        def visualize(self, transition_duration=1000, fade_in_duration=1000):
+            return self._logger.visualize(
+                transition_duration=transition_duration,
+                fade_in_duration=fade_in_duration,
+            )
 
         for name in dir(cls):
             value = getattr(cls, name)
@@ -190,14 +197,17 @@ def node(value_field: str = "value", next_field: str = "next"):
         def _get_class_name(self):
             return self.__class__.__name__
 
-        def visualize(self):
+        def visualize(self, transition_duration=1000, fade_in_duration=1000):
             """
             Visualizes the logged operations in the current logger. If the node
             belongs to a container the current logger is the logger of that
             container. Only animates the operations that haven't been animated
             yet.
             """
-            return get_logger().visualize()
+            return get_logger().visualize(
+                transition_duration=transition_duration,
+                fade_in_duration=fade_in_duration,
+            )
 
         setattr(cls, "__init__", __init__)
         setattr(cls, "__repr__", __repr__)

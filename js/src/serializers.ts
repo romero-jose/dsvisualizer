@@ -44,8 +44,14 @@ export type Operation = {
   metadata: Metadata;
 };
 
+export type VisualizationMetadata = {
+  transition_duration?: number;
+  fade_in_duration?: number;
+};
+
 export type Operations = {
   operations: Operation[];
+  metadata: VisualizationMetadata;
 };
 
 function serialize_operations(ops: Operations): Operations {

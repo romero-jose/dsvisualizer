@@ -1,5 +1,10 @@
 import * as d3 from 'd3';
-import { Operations, Operation, Init } from './serializers';
+import {
+  Operations,
+  Operation,
+  Init,
+  VisualizationMetadata,
+} from './serializers';
 
 const WIDTH = 1000;
 const HEIGHT = 250;
@@ -15,8 +20,8 @@ const OUTER_PADDING = 40;
 const INNER_PADDING = 50;
 const STEP = 100;
 
-// const ITER_DURATION = 1000;
-const FADE_IN = 1000;
+// Default durations
+const FADE = 1000;
 const TRANSITION = 1000;
 
 const ARROW_HEAD_LENGTH = 10;
@@ -38,13 +43,14 @@ function fade(
   selection: d3.Selection<any, any, any, unknown>,
   initial_opacity = 0,
   final_opacity = 1,
-  animate = true
+  animate = true,
+  duration: number
 ) {
   if (animate) {
     return selection
       .attr('opacity', initial_opacity)
       .transition()
-      .duration(FADE_IN)
+      .duration(duration)
       .attr('opacity', final_opacity)
       .end();
   } else {
@@ -55,27 +61,30 @@ function fade(
 
 function fade_in(
   selection: d3.Selection<any, any, any, unknown>,
-  animate = true
+  animate = true,
+  duration: number = FADE
 ): Promise<void> {
-  return fade(selection, 0, 1, animate);
+  return fade(selection, 0, 1, animate, duration);
 }
 
 export function fade_out(
   selection: d3.Selection<any, any, any, unknown>,
-  animate = true
+  animate = true,
+  duration: number = FADE
 ): Promise<void> {
-  return fade(selection, 1, 0, animate);
+  return fade(selection, 1, 0, animate, duration);
 }
 
 function transform(
   selection: d3.Selection<any, any, any, unknown>,
   transform: ((d: any) => string) | string,
-  animate = true
+  animate = true,
+  duration: number = TRANSITION
 ): Promise<void> {
   if (animate) {
     return selection
       .transition()
-      .duration(TRANSITION)
+      .duration(duration)
       .attr('transform', <any>transform)
       .end();
   } else {
@@ -150,8 +159,9 @@ class Viz {
   private _heads: number[];
   private _iterator: d3.Selection<SVGGElement, unknown, any, any>;
   private _data: BoxData[];
+  private metadata: VisualizationMetadata;
 
-  constructor(element: HTMLElement) {
+  constructor(element: HTMLElement, metadata: VisualizationMetadata) {
     // Container
     const svg = d3
       .select(element)
@@ -160,6 +170,9 @@ class Viz {
       .classed('viz', true);
 
     this._container = svg;
+
+    // Metadata
+    this.metadata = metadata;
 
     // Zoom
     const zoomBehaviour = d3
@@ -197,10 +210,20 @@ class Viz {
     }
     const i = datum.i;
     const j = datum.list_index;
-    transform(this._iterator, layout(i - 1, j), false);
-    await fade_in(this._iterator);
-    await transform(this._iterator, layout(i, j));
-    fade_out(this._iterator);
+    transform(
+      this._iterator,
+      layout(i - 1, j),
+      false,
+      this.metadata.transition_duration
+    );
+    await fade_in(this._iterator, animate, this.metadata.fade_in_duration);
+    await transform(
+      this._iterator,
+      layout(i, j),
+      animate,
+      this.metadata.transition_duration
+    );
+    fade_out(this._iterator, animate, this.metadata.fade_in_duration);
     return;
   }
 
@@ -290,14 +313,19 @@ class Viz {
         `translate(${RECT_WIDTH}, ${RECT_HEIGHT / 2})`
       );
 
-      return fade_in(boxes_enter, animate);
+      return fade_in(boxes_enter, animate, this.metadata.fade_in_duration);
     };
 
     const update = (
       selection: d3.Selection<d3.BaseType, BoxData, any, unknown>
     ) => {
       console.log('update');
-      return transform(selection, (d) => layout(d.i, d.list_index), animate);
+      return transform(
+        selection,
+        (d) => layout(d.i, d.list_index),
+        animate,
+        this.metadata.transition_duration
+      );
     };
 
     await update(boxes);
@@ -341,7 +369,7 @@ export async function animate_operations(
     .attr('class', 'source-code-container')
     .text('Source: ');
 
-  const linked_list_viz = new Viz(element);
+  const linked_list_viz = new Viz(element, ops.metadata);
 
   for (const op of ops.operations) {
     code.select('.source-code').remove();

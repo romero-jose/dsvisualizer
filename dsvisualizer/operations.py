@@ -53,7 +53,8 @@ class Operation:
 
 @dataclass(frozen=True)
 class VisualizationMetadata:
-    pass
+    transition_duration: int = 1000
+    fade_in_duration: int = 1000
 
 
 @dataclass(frozen=True)

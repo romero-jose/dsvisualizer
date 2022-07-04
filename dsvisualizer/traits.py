@@ -6,6 +6,7 @@ from dsvisualizer.operations import (
     GetValue,
     Metadata,
     Operation,
+    VisualizationMetadata,
     Operations,
     SetValue,
     GetNext,
@@ -44,7 +45,10 @@ def serialize_operations(ops: Operations) -> Dict[str, Any]:
 
 
 def deserialize_operations(obj: Dict[str, Any]) -> Operations:
-    return Operations(operations=[deserialize_operation(op) for op in obj["operations"]])
+    return Operations(
+        operations=[deserialize_operation(op) for op in obj["operations"]],
+        metadata=VisualizationMetadata(**obj["metadata"]),
+    )
 
 
 operation_serialization = {
