@@ -3,9 +3,19 @@
 }
 
 .viz .box rect {
-  fill: darkcyan ;
+  fill: darkcyan;
 }
 
 .viz .box text {
   fill: white;
+}
+
+@media (prefers-color-scheme: dark) {
+  .viz .arrow {
+    stroke: white;
+  }
+
+  .viz .arrow line {
+    stroke: white;
+  }
 }
