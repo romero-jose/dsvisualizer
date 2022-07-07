@@ -7,7 +7,7 @@ class Init:
     operation: str = field(init=False, repr=False, default="init")
     id: int
     value: Any
-    next: Union[int, "Init", None]
+    next: Union[int, None]
 
 
 @dataclass(frozen=True)
