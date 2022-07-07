@@ -103,7 +103,6 @@ export function append_arrow(
   arrow
     .append('line')
     .attr('x2', length - ARROW_HEAD_LENGTH)
-    .attr('stroke', '#000000')
     .attr('stroke-width', ARROW_STROKE_WIDTH)
     .attr('fill', 'none');
 

@@ -1,22 +1,78 @@
+:root {
+  --light-bg: white;
+  --light-fg: black;
+  --dark-bg: #383838;
+  --dark-fg: #d2d2d2;
+  --font-primary: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS',
+    sans-serif;
+  --light-box-color: darkcyan;
+  --dark-box-color: darkcyan;
+  --light-box-fg: white;
+  --dark-box-fg: white;
+}
+
 .viz text {
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-family: var(--font-primary);
 }
 
 .viz .box rect {
-  fill: darkcyan;
+  fill: var(--light-box-color);
 }
 
 .viz .box text {
-  fill: white;
+  fill: var(--light-box-fg);
+}
+
+.viz .arrow {
+  stroke: var(--light-fg);
+  fill: var(--light-fg)
+}
+
+.viz .arrow .line {
+  stroke: var(--light-fg);
+}
+
+.viz {
+  background-color: var(--light-bg);
+}
+
+.source-code-container {
+  background-color: var(--light-bg);
+  color: var(--light-fg);
+}
+
+.source-code-container code {
+  color: var(--light-fg);
 }
 
 @media (prefers-color-scheme: dark) {
-  .viz .arrow {
-    stroke: white;
-    fill: white;
+  .viz .box rect {
+    fill: var(--dark-box-color);
   }
 
-  .viz .arrow line {
-    stroke: white;
+  .viz .box text {
+    fill: var(--dark-box-fg);
+  }
+
+  .viz .arrow {
+    fill: var(--dark-fg);
+    stroke: var(--dark-fg);
+  }
+
+  .viz .arrow .line {
+    stroke: var(--dark-fg);
+  }
+
+  .viz {
+    background-color: var(--dark-bg);
+  }
+
+  .source-code-container {
+    background-color: var(--dark-bg);
+    color: var(--dark-fg);
+  }
+
+  .source-code-container code {
+    color: var(--dark-fg);
   }
 }
