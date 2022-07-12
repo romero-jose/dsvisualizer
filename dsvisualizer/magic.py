@@ -114,7 +114,7 @@ def container(lines_before=2, lines_after=2):
 
     Example:
 
-    >>> @visualize()
+    >>> @container()
         class List:
             def __init__(self):
                 self.head = None
