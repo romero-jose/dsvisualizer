@@ -24,7 +24,7 @@ class LinkedListMixin:
         obj = super(LinkedListMixin, cls).__new__(cls)
         obj._id = next(counter)
         # TODO: Replace with a more robust method for obtaining the args
-        get_logger().log(Init(obj._id, args[0], args[1]._id if args[1] else None))
+        get_logger().log(Init(obj._id, str(args[0]), args[1]._id if args[1] else None))
         return obj
 
     def __repr__(self):
@@ -49,7 +49,7 @@ class ValueField:
 
     def __set__(self, obj: LinkedListMixin, value):
         if obj._value != UNINITIALIZED:
-            get_logger().log(SetValue(obj._id, value))
+            get_logger().log(SetValue(obj._id, str(value)))
         obj._value = value
 
 
@@ -189,7 +189,7 @@ def node(value_field: str = "value", next_field: str = "next"):
                 value = args[0]
                 n = args[1]._id if args[1] else None
 
-            get_logger().log(Init(self._id, value, n))
+            get_logger().log(Init(self._id, str(value), n))
 
         def __repr__(self):
             return f"({self._get_class_name()} {self._value} {self._next})"

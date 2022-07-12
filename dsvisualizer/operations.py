@@ -6,7 +6,7 @@ from typing import Any, Union, List
 class Init:
     operation: str = field(init=False, repr=False, default="init")
     id: int
-    value: Any
+    value: str
     next: Union[int, None]
 
 
@@ -14,7 +14,7 @@ class Init:
 class SetValue:
     operation: str = field(init=False, repr=False, default="set_value")
     id: int
-    value: Any
+    value: str
 
 
 @dataclass(frozen=True)
