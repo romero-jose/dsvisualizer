@@ -10,6 +10,8 @@ corresponding decorators to the linked list node and container.
 
 ![Usage](usage.gif)
 
+You can see an example notebook in [introduction](examples/introduction.ipynb).
+
 ## Installation
 
 You can install using `pip`:
