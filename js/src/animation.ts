@@ -168,7 +168,7 @@ class Viz {
       .attr('viewBox', [0, 0, WIDTH, HEIGHT])
       .classed('viz', true);
 
-    this._container = svg;
+    this._container = svg.append('g');
 
     // Metadata
     this.metadata = metadata;
@@ -181,9 +181,11 @@ class Viz {
         [WIDTH, HEIGHT],
       ])
       .scaleExtent([0.5, 2])
-      .on('zoom', (event) => event.transform);
+      .on('zoom', (event) =>
+        this._container.attr('transform', event.transform)
+      );
 
-    this._container.call(zoomBehaviour);
+    svg.call(zoomBehaviour);
 
     this._nodes = new Map<number, VizNode>();
     this._edges = new Map<number, number>();
